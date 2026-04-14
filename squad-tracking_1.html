@@ -1,0 +1,837 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SQUAD — Tracking & Nutrition</title>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Unbounded:wght@400;700;900&family=Syne:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #07080F;
+  --dark: #0D0F1A;
+  --card: #10121F;
+  --card2: #13162A;
+  --border: rgba(255,255,255,0.07);
+  --text: #F0F0FF;
+  --muted: #4A4D6A;
+  --green: #00FF87;
+  --pink: #FF2D78;
+  --blue: #00D4FF;
+  --yellow: #FFE600;
+  --orange: #FF6B00;
+  --purple: #9B5CF6;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif;min-height:100vh;display:flex;justify-content:center;align-items:flex-start;padding:40px 20px 80px;gap:40px;flex-wrap:wrap;}
+body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,0.025) 2px,rgba(0,0,0,0.025) 4px);pointer-events:none;z-index:9999;}
+
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
+@keyframes pulse{0%,100%{box-shadow:0 0 20px var(--green),0 0 40px rgba(0,255,135,0.2)}50%{box-shadow:0 0 10px var(--green)}}
+@keyframes pulse-pink{0%,100%{box-shadow:0 0 20px var(--pink),0 0 40px rgba(255,45,120,0.2)}50%{box-shadow:0 0 10px var(--pink)}}
+@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+@keyframes shimmer{0%{background-position:-200% 0}100%{background-position:200% 0}}
+@keyframes slide-in{from{transform:translateY(16px);opacity:0}to{transform:translateY(0);opacity:1}}
+@keyframes camera-scan{0%{top:10%}50%{top:85%}100%{top:10%}}
+@keyframes ring-fill{from{stroke-dashoffset:var(--start)}to{stroke-dashoffset:var(--end)}}
+@keyframes count-up{from{opacity:0;transform:scale(0.8)}to{opacity:1;transform:scale(1)}}
+
+/* PHONE */
+.phone-wrap{display:flex;flex-direction:column;align-items:center;gap:14px;}
+.phone-label{font-family:'Press Start 2P',monospace;font-size:7px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;}
+.phone{width:375px;background:var(--dark);border-radius:48px;border:2px solid rgba(255,255,255,0.08);overflow:hidden;position:relative;box-shadow:0 0 0 1px rgba(255,255,255,0.03),0 40px 80px rgba(0,0,0,0.8);animation:float 5s ease-in-out infinite;}
+.phone::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;z-index:20;}
+.ph-green::before{background:linear-gradient(90deg,transparent,var(--green),transparent);}
+.ph-blue::before{background:linear-gradient(90deg,transparent,var(--blue),transparent);}
+.ph-pink::before{background:linear-gradient(90deg,transparent,var(--pink),transparent);}
+.ph-purple::before{background:linear-gradient(90deg,transparent,var(--purple),transparent);}
+
+.phone:nth-child(1){animation-delay:0s;}
+.phone:nth-child(2){animation-delay:0.4s;}
+.phone:nth-child(3){animation-delay:0.8s;}
+.phone:nth-child(4){animation-delay:1.2s;}
+
+.notch{height:40px;background:var(--dark);display:flex;align-items:flex-end;justify-content:center;padding-bottom:6px;}
+.notch-pill{width:115px;height:32px;background:#000;border-radius:0 0 18px 18px;display:flex;align-items:center;justify-content:center;gap:8px;}
+.nc{width:10px;height:10px;background:#111;border-radius:50%;border:1px solid #222;}
+.nm{width:52px;height:4px;background:#111;border-radius:10px;}
+.status{display:flex;justify-content:space-between;padding:4px 22px 0;font-family:'Press Start 2P',monospace;font-size:8px;color:rgba(255,255,255,0.35);}
+.screen{padding:14px 18px 88px;min-height:700px;overflow-y:auto;position:relative;}
+.screen::-webkit-scrollbar{display:none;}
+
+/* BOTTOM NAV */
+.bnav{position:absolute;bottom:0;left:0;right:0;height:80px;background:rgba(8,10,18,0.97);backdrop-filter:blur(20px);border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-around;padding:0 6px 14px;z-index:10;}
+.bi{display:flex;flex-direction:column;align-items:center;gap:3px;font-family:'Press Start 2P',monospace;font-size:5px;color:var(--muted);}
+.bi.on{color:var(--green);text-shadow:0 0 8px var(--green);}
+.bi.on2{color:var(--blue);text-shadow:0 0 8px var(--blue);}
+.bico{font-size:19px;}
+
+/* COMMON */
+.top-bar{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;}
+.screen-title{font-family:'Press Start 2P',monospace;font-size:12px;letter-spacing:1px;text-shadow:0 0 10px currentColor;}
+.sh{font-family:'Press Start 2P',monospace;font-size:7px;color:var(--muted);letter-spacing:2px;margin-bottom:10px;}
+.card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:14px;margin-bottom:10px;position:relative;overflow:hidden;}
+.card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;opacity:0.6;}
+.c-green::before{background:linear-gradient(90deg,var(--green),transparent);}
+.c-blue::before{background:linear-gradient(90deg,var(--blue),transparent);}
+.c-pink::before{background:linear-gradient(90deg,var(--pink),transparent);}
+.c-purple::before{background:linear-gradient(90deg,var(--purple),transparent);}
+.c-yellow::before{background:linear-gradient(90deg,var(--yellow),transparent);}
+.c-orange::before{background:linear-gradient(90deg,var(--orange),transparent);}
+
+/* ===== SCREEN 1: DASHBOARD TRACKING ===== */
+.dash-greeting{margin-bottom:18px;}
+.dash-greeting h2{font-family:'Unbounded',sans-serif;font-size:18px;font-weight:900;margin-bottom:4px;}
+.dash-greeting p{font-size:12px;color:var(--muted);}
+.dash-date{font-family:'Press Start 2P',monospace;font-size:7px;color:var(--green);text-shadow:0 0 8px var(--green);}
+
+/* MACRO RING */
+.macro-hero{background:var(--card);border:1px solid var(--border);border-radius:20px;padding:18px;margin-bottom:12px;display:flex;align-items:center;gap:16px;}
+.ring-wrap{position:relative;flex-shrink:0;}
+.ring-wrap svg{transform:rotate(-90deg);}
+.ring-center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;}
+.ring-kcal{font-family:'Press Start 2P',monospace;font-size:11px;color:var(--green);text-shadow:0 0 10px var(--green);animation:count-up 1s ease forwards;}
+.ring-label{font-family:'Press Start 2P',monospace;font-size:6px;color:var(--muted);margin-top:3px;}
+.macro-details{flex:1;}
+.macro-item{margin-bottom:8px;}
+.macro-item:last-child{margin-bottom:0;}
+.macro-name{font-size:11px;color:var(--muted);margin-bottom:3px;display:flex;justify-content:space-between;}
+.macro-name span:last-child{color:var(--text);font-weight:600;}
+.macro-bar{height:6px;background:#1a1d2e;border-radius:10px;overflow:hidden;}
+.macro-fill{height:100%;border-radius:10px;}
+.mf-p{background:linear-gradient(90deg,var(--blue),rgba(0,212,255,0.6));width:72%;box-shadow:0 0 4px var(--blue);}
+.mf-g{background:linear-gradient(90deg,var(--yellow),rgba(255,230,0,0.6));width:55%;box-shadow:0 0 4px var(--yellow);}
+.mf-f{background:linear-gradient(90deg,var(--orange),rgba(255,107,0,0.6));width:40%;box-shadow:0 0 4px var(--orange);}
+
+/* QUICK ADD */
+.quick-add-row{display:flex;gap:8px;margin-bottom:12px;}
+.qa-btn{flex:1;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:12px 8px;text-align:center;cursor:pointer;transition:0.2s;}
+.qa-btn:hover{border-color:rgba(0,255,135,0.3);}
+.qa-icon{font-size:22px;margin-bottom:4px;}
+.qa-label{font-family:'Press Start 2P',monospace;font-size:6px;color:var(--muted);letter-spacing:0.5px;line-height:1.6;}
+
+/* BODY METRICS */
+.metrics-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px;}
+.metric-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:12px;text-align:center;position:relative;overflow:hidden;}
+.metric-card::after{content:'';position:absolute;bottom:0;left:0;right:0;height:2px;}
+.mc-w::after{background:var(--blue);box-shadow:0 0 6px var(--blue);}
+.mc-m::after{background:var(--green);box-shadow:0 0 6px var(--green);}
+.mc-f::after{background:var(--orange);box-shadow:0 0 6px var(--orange);}
+.mc-h::after{background:var(--purple);box-shadow:0 0 6px var(--purple);}
+.metric-val{font-family:'Press Start 2P',monospace;font-size:16px;margin-bottom:3px;}
+.mv-blue{color:var(--blue);text-shadow:0 0 10px var(--blue);}
+.mv-green{color:var(--green);text-shadow:0 0 10px var(--green);}
+.mv-orange{color:var(--orange);text-shadow:0 0 10px var(--orange);}
+.mv-purple{color:var(--purple);text-shadow:0 0 10px var(--purple);}
+.metric-unit{font-size:10px;color:var(--muted);margin-bottom:4px;}
+.metric-trend{font-family:'Press Start 2P',monospace;font-size:6px;}
+.trend-up{color:var(--green);}
+.trend-down{color:var(--pink);}
+
+/* MEALS LOG */
+.meal-item{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border);}
+.meal-item:last-child{border-bottom:none;}
+.meal-icon{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;}
+.mi-bg1{background:rgba(0,255,135,0.1);}
+.mi-bg2{background:rgba(0,212,255,0.1);}
+.mi-bg3{background:rgba(255,107,0,0.1);}
+.mi-bg4{background:rgba(155,92,246,0.1);}
+.meal-info{flex:1;}
+.meal-name{font-size:13px;font-weight:600;margin-bottom:2px;}
+.meal-cal{font-family:'Press Start 2P',monospace;font-size:7px;color:var(--muted);}
+.meal-kcal{font-family:'Press Start 2P',monospace;font-size:8px;color:var(--green);}
+
+/* ===== SCREEN 2: CAMERA CALORIES ===== */
+.camera-view{position:relative;height:260px;background:#000;border-radius:20px;overflow:hidden;margin-bottom:14px;border:2px solid rgba(0,255,135,0.3);box-shadow:0 0 30px rgba(0,255,135,0.1);}
+.cam-bg{position:absolute;inset:0;background:linear-gradient(135deg,#0a1a0a,#001a0a,#0a0a1a);display:flex;align-items:center;justify-content:center;}
+.food-emoji{font-size:80px;filter:drop-shadow(0 0 20px rgba(0,255,135,0.3));}
+.cam-overlay{position:absolute;inset:0;}
+.cam-corner{position:absolute;width:24px;height:24px;border-color:var(--green);border-style:solid;box-shadow:0 0 10px var(--green);}
+.cc-tl{top:12px;left:12px;border-width:3px 0 0 3px;}
+.cc-tr{top:12px;right:12px;border-width:3px 3px 0 0;}
+.cc-bl{bottom:12px;left:12px;border-width:0 0 3px 3px;}
+.cc-br{bottom:12px;right:12px;border-width:0 3px 3px 0;}
+.cam-scan{position:absolute;left:12px;right:12px;height:2px;background:linear-gradient(90deg,transparent,var(--green),transparent);box-shadow:0 0 10px var(--green);animation:camera-scan 2s ease-in-out infinite;top:40%;}
+.cam-badge{position:absolute;top:14px;left:50%;transform:translateX(-50%);background:rgba(0,255,135,0.15);border:1px solid var(--green);border-radius:20px;padding:5px 12px;font-family:'Press Start 2P',monospace;font-size:6px;color:var(--green);letter-spacing:1px;white-space:nowrap;}
+.cam-result{position:absolute;bottom:12px;left:12px;right:12px;background:rgba(0,0,0,0.85);backdrop-filter:blur(10px);border-radius:12px;padding:10px 14px;border:1px solid rgba(0,255,135,0.2);display:flex;align-items:center;justify-content:space-between;}
+.cr-food{font-size:13px;font-weight:700;}
+.cr-kcal{font-family:'Press Start 2P',monospace;font-size:10px;color:var(--green);text-shadow:0 0 8px var(--green);}
+
+.ai-tag{display:inline-flex;align-items:center;gap:6px;background:rgba(0,255,135,0.08);border:1px solid rgba(0,255,135,0.2);border-radius:20px;padding:6px 12px;font-family:'Press Start 2P',monospace;font-size:6px;color:var(--green);letter-spacing:1px;margin-bottom:14px;}
+.ai-dot{width:6px;height:6px;background:var(--green);border-radius:50%;animation:blink 1s step-end infinite;box-shadow:0 0 6px var(--green);}
+
+.nutrition-breakdown{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:6px;margin-bottom:14px;}
+.nb-item{background:var(--card);border-radius:10px;padding:8px 4px;text-align:center;border:1px solid var(--border);}
+.nb-val{font-family:'Press Start 2P',monospace;font-size:9px;margin-bottom:3px;}
+.nb-label{font-size:9px;color:var(--muted);}
+.nb-kcal .nb-val{color:var(--green);}
+.nb-prot .nb-val{color:var(--blue);}
+.nb-gluc .nb-val{color:var(--yellow);}
+.nb-fat .nb-val{color:var(--orange);}
+
+.add-food-btn{width:100%;font-family:'Press Start 2P',monospace;font-size:8px;background:var(--green);color:var(--bg);border:none;padding:13px;cursor:pointer;letter-spacing:1px;border-radius:12px;box-shadow:0 0 20px rgba(0,255,135,0.3);margin-bottom:10px;}
+.manual-btn{width:100%;font-family:'Press Start 2P',monospace;font-size:7px;background:transparent;color:var(--muted);border:1px solid var(--border);padding:11px;cursor:pointer;letter-spacing:1px;border-radius:12px;}
+
+.recent-foods p{font-family:'Press Start 2P',monospace;font-size:7px;color:var(--muted);letter-spacing:1px;margin-bottom:10px;}
+.food-chip-row{display:flex;gap:6px;flex-wrap:wrap;}
+.food-chip{background:var(--card);border:1px solid var(--border);border-radius:20px;padding:5px 10px;font-size:11px;cursor:pointer;}
+
+/* ===== SCREEN 3: MANUAL ENTRY ===== */
+.manual-header{margin-bottom:18px;}
+.mh-title{font-family:'Press Start 2P',monospace;font-size:11px;color:var(--blue);text-shadow:0 0 10px var(--blue);margin-bottom:6px;letter-spacing:1px;}
+.mh-sub{font-size:12px;color:var(--muted);}
+
+.tab-row{display:flex;gap:4px;background:var(--card);border-radius:12px;padding:4px;margin-bottom:16px;}
+.tab{flex:1;font-family:'Press Start 2P',monospace;font-size:6px;padding:8px 4px;border:none;background:transparent;color:var(--muted);cursor:pointer;border-radius:8px;letter-spacing:0.5px;}
+.tab.on{background:var(--blue);color:#000;box-shadow:0 0 12px rgba(0,212,255,0.3);}
+
+.input-group{margin-bottom:12px;}
+.input-label{font-family:'Press Start 2P',monospace;font-size:6px;color:var(--muted);letter-spacing:1px;margin-bottom:6px;}
+.input-field{width:100%;background:var(--card);border:1px solid var(--border);border-radius:10px;padding:11px 14px;font-family:'Syne',sans-serif;font-size:14px;color:var(--text);outline:none;}
+.input-field:focus{border-color:var(--blue);box-shadow:0 0 10px rgba(0,212,255,0.1);}
+.input-field::placeholder{color:var(--muted);}
+
+.input-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px;}
+
+.macro-sliders{margin-bottom:14px;}
+.slider-item{margin-bottom:12px;}
+.sl-header{display:flex;justify-content:space-between;margin-bottom:6px;}
+.sl-name{font-size:12px;font-weight:600;}
+.sl-val{font-family:'Press Start 2P',monospace;font-size:8px;}
+.sl-blue{color:var(--blue);}
+.sl-yellow{color:var(--yellow);}
+.sl-orange{color:var(--orange);}
+.sl-track{height:8px;background:#1a1d2e;border-radius:10px;position:relative;}
+.sl-fill{height:100%;border-radius:10px;position:relative;}
+.sl-fill::after{content:'';position:absolute;right:-1px;top:-4px;width:16px;height:16px;background:white;border-radius:50%;box-shadow:0 2px 8px rgba(0,0,0,0.4);}
+.sf-blue{background:linear-gradient(90deg,var(--blue),rgba(0,212,255,0.7));width:65%;box-shadow:0 0 4px var(--blue);}
+.sf-yellow{background:linear-gradient(90deg,var(--yellow),rgba(255,230,0,0.7));width:48%;box-shadow:0 0 4px var(--yellow);}
+.sf-orange{background:linear-gradient(90deg,var(--orange),rgba(255,107,0,0.7));width:32%;box-shadow:0 0 4px var(--orange);}
+
+.save-btn{width:100%;font-family:'Press Start 2P',monospace;font-size:8px;background:var(--blue);color:#000;border:none;padding:13px;cursor:pointer;letter-spacing:1px;border-radius:12px;box-shadow:0 0 20px rgba(0,212,255,0.3);margin-bottom:8px;}
+
+.meal-time-row{display:flex;gap:6px;margin-bottom:14px;}
+.mt-btn{flex:1;background:var(--card);border:1px solid var(--border);border-radius:10px;padding:8px 4px;font-family:'Press Start 2P',monospace;font-size:6px;color:var(--muted);cursor:pointer;text-align:center;letter-spacing:0.5px;}
+.mt-btn.on{border-color:var(--blue);color:var(--blue);}
+
+/* ===== SCREEN 4: SMART SCALE & BODY TRACKING ===== */
+.device-header{margin-bottom:16px;}
+.dh-title{font-family:'Press Start 2P',monospace;font-size:11px;color:var(--purple);text-shadow:0 0 10px var(--purple);margin-bottom:6px;letter-spacing:1px;}
+.dh-sub{font-size:12px;color:var(--muted);}
+
+/* CONNECTED DEVICES */
+.device-card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:14px;margin-bottom:10px;display:flex;align-items:center;gap:12px;}
+.device-icon-wrap{width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;}
+.di-scale{background:linear-gradient(135deg,rgba(155,92,246,0.2),rgba(0,212,255,0.1));border:1px solid rgba(155,92,246,0.3);}
+.di-watch{background:linear-gradient(135deg,rgba(0,255,135,0.2),rgba(0,212,255,0.1));border:1px solid rgba(0,255,135,0.3);}
+.di-hr{background:linear-gradient(135deg,rgba(255,45,120,0.2),rgba(255,107,0,0.1));border:1px solid rgba(255,45,120,0.3);}
+.di-app{background:linear-gradient(135deg,rgba(255,230,0,0.15),rgba(255,107,0,0.1));border:1px solid rgba(255,230,0,0.3);}
+.device-info{flex:1;}
+.device-name{font-size:13px;font-weight:700;margin-bottom:2px;}
+.device-status{font-family:'Press Start 2P',monospace;font-size:6px;letter-spacing:1px;}
+.ds-connected{color:var(--green);text-shadow:0 0 6px var(--green);}
+.ds-syncing{color:var(--blue);animation:blink 1s step-end infinite;}
+.ds-offline{color:var(--muted);}
+.device-data{font-family:'Press Start 2P',monospace;font-size:9px;text-align:right;}
+.dd-purple{color:var(--purple);}
+.dd-green{color:var(--green);}
+.dd-pink{color:var(--pink);}
+
+/* BODY COMPOSITION */
+.body-comp{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:14px;margin-bottom:10px;}
+.bc-title{font-family:'Press Start 2P',monospace;font-size:7px;color:var(--muted);letter-spacing:2px;margin-bottom:14px;}
+.bc-avatar-row{display:flex;align-items:center;gap:16px;margin-bottom:14px;}
+.body-silhouette{font-size:56px;filter:drop-shadow(0 0 16px rgba(155,92,246,0.4));animation:float 4s ease-in-out infinite;}
+.bc-main-stats{flex:1;}
+.bcs-item{margin-bottom:8px;}
+.bcs-label{font-size:10px;color:var(--muted);margin-bottom:3px;display:flex;justify-content:space-between;}
+.bcs-label span:last-child{color:var(--text);font-weight:600;}
+.bcs-bar{height:7px;background:#1a1d2e;border-radius:10px;overflow:hidden;}
+.bcs-fill{height:100%;border-radius:10px;}
+.bcf-muscle{background:linear-gradient(90deg,var(--green),rgba(0,255,135,0.6));width:42%;box-shadow:0 0 4px var(--green);}
+.bcf-fat{background:linear-gradient(90deg,var(--orange),rgba(255,107,0,0.6));width:18%;box-shadow:0 0 4px var(--orange);}
+.bcf-water{background:linear-gradient(90deg,var(--blue),rgba(0,212,255,0.6));width:61%;box-shadow:0 0 4px var(--blue);}
+.bcf-bone{background:linear-gradient(90deg,var(--purple),rgba(155,92,246,0.6));width:15%;box-shadow:0 0 4px var(--purple);}
+
+/* PROGRESS CHART */
+.progress-chart{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:14px;margin-bottom:10px;}
+.pc-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;}
+.pc-title{font-family:'Press Start 2P',monospace;font-size:7px;color:var(--text);letter-spacing:1px;}
+.pc-period{display:flex;gap:4px;}
+.period-btn{font-family:'Press Start 2P',monospace;font-size:5px;padding:4px 6px;border:1px solid var(--border);background:transparent;color:var(--muted);cursor:pointer;border-radius:4px;}
+.period-btn.on{background:var(--purple);border-color:var(--purple);color:#fff;}
+
+/* MINI CHART */
+.mini-chart{position:relative;height:80px;margin-bottom:8px;}
+.chart-grid{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:space-between;}
+.chart-line{height:1px;background:rgba(255,255,255,0.04);}
+.chart-svg{position:absolute;inset:0;}
+
+.weight-labels{display:flex;justify-content:space-between;font-family:'Press Start 2P',monospace;font-size:5px;color:var(--muted);}
+
+/* ALERTS */
+.alert-card{border-radius:12px;padding:11px 14px;margin-bottom:8px;display:flex;align-items:center;gap:10px;}
+.ac-green{background:rgba(0,255,135,0.06);border:1px solid rgba(0,255,135,0.2);}
+.ac-blue{background:rgba(0,212,255,0.06);border:1px solid rgba(0,212,255,0.2);}
+.ac-orange{background:rgba(255,107,0,0.06);border:1px solid rgba(255,107,0,0.2);}
+.alert-icon{font-size:20px;flex-shrink:0;}
+.alert-text{flex:1;}
+.alert-text h4{font-size:12px;font-weight:700;margin-bottom:2px;}
+.alert-text p{font-size:10px;color:var(--muted);line-height:1.5;}
+
+/* PROTEIN TRACKER */
+.protein-card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:14px;margin-bottom:10px;}
+.prot-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;}
+.prot-title{font-family:'Press Start 2P',monospace;font-size:7px;color:var(--blue);letter-spacing:1px;text-shadow:0 0 8px var(--blue);}
+.prot-val{font-family:'Press Start 2P',monospace;font-size:12px;color:var(--blue);}
+.prot-bar-wrap{margin-bottom:10px;}
+.prot-bar{height:12px;background:#1a1d2e;border-radius:10px;overflow:hidden;position:relative;}
+.prot-fill{height:100%;background:linear-gradient(90deg,var(--blue),rgba(0,212,255,0.6));width:72%;box-shadow:0 0 6px var(--blue);}
+.prot-fill::after{content:'72%';position:absolute;right:6px;top:50%;transform:translateY(-50%);font-family:'Press Start 2P',monospace;font-size:6px;color:rgba(0,0,0,0.6);}
+.prot-sources{display:flex;gap:6px;flex-wrap:wrap;}
+.ps-chip{background:rgba(0,212,255,0.08);border:1px solid rgba(0,212,255,0.2);border-radius:20px;padding:4px 10px;font-size:10px;display:flex;align-items:center;gap:4px;}
+.ps-g{font-family:'Press Start 2P',monospace;font-size:6px;color:var(--blue);}
+
+/* TITLE BLOCK */
+.page-title-block{text-align:center;padding:40px 20px 20px;width:100%;}
+.page-logo{font-family:'Press Start 2P',monospace;font-size:28px;color:var(--text);text-shadow:0 0 20px var(--green);letter-spacing:4px;margin-bottom:8px;}
+.page-logo span{color:var(--green);}
+.page-sub{font-size:14px;color:var(--muted);letter-spacing:0.3px;}
+.feature-tag{display:inline-block;font-family:'Press Start 2P',monospace;font-size:7px;color:var(--pink);border:1px solid var(--pink);padding:5px 12px;margin-top:10px;letter-spacing:1px;}
+</style>
+</head>
+<body>
+
+<!-- TITLE -->
+<div class="page-title-block">
+  <div class="page-logo">SQU<span>A</span>D</div>
+  <div class="feature-tag">★ TRACKING & NUTRITION MODULE ★</div>
+  <p class="page-sub" style="margin-top:10px;">Calories · Macros · Balance connectée · Suivi corporel</p>
+</div>
+
+<!-- ===== PHONE 1: DASHBOARD ===== -->
+<div class="phone-wrap">
+  <div class="phone-label">01 — TABLEAU DE BORD</div>
+  <div class="phone ph-green">
+    <div class="notch"><div class="notch-pill"><div class="nm"></div><div class="nc"></div></div></div>
+    <div class="status"><span>9:41</span><span>▪▪▪</span></div>
+    <div class="screen">
+      <div class="top-bar">
+        <div>
+          <div class="dash-greeting">
+            <h2>Bonjour 👋</h2>
+            <div class="dash-date">LUNDI 14 AVRIL</div>
+          </div>
+        </div>
+        <div style="font-size:28px;">🔥</div>
+      </div>
+
+      <!-- MACRO RING -->
+      <div class="macro-hero">
+        <div class="ring-wrap">
+          <svg width="90" height="90" viewBox="0 0 90 90">
+            <circle cx="45" cy="45" r="38" fill="none" stroke="#1a1d2e" stroke-width="8"/>
+            <circle cx="45" cy="45" r="38" fill="none" stroke="var(--green)" stroke-width="8" stroke-dasharray="238" stroke-dashoffset="71" stroke-linecap="round" style="filter:drop-shadow(0 0 6px var(--green));"/>
+          </svg>
+          <div class="ring-center">
+            <div class="ring-kcal">1420</div>
+            <div class="ring-label">/ 2000</div>
+          </div>
+        </div>
+        <div class="macro-details">
+          <div style="font-family:'Press Start 2P',monospace;font-size:7px;color:var(--muted);letter-spacing:1px;margin-bottom:10px;">MACROS DU JOUR</div>
+          <div class="macro-item">
+            <div class="macro-name"><span>🔵 Protéines</span><span>112g / 155g</span></div>
+            <div class="macro-bar"><div class="macro-fill mf-p"></div></div>
+          </div>
+          <div class="macro-item">
+            <div class="macro-name"><span>🟡 Glucides</span><span>148g / 220g</span></div>
+            <div class="macro-bar"><div class="macro-fill mf-g"></div></div>
+          </div>
+          <div class="macro-item">
+            <div class="macro-name"><span>🟠 Lipides</span><span>38g / 65g</span></div>
+            <div class="macro-bar"><div class="macro-fill mf-f"></div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- QUICK ADD -->
+      <p class="sh">▸ AJOUTER DES CALORIES</p>
+      <div class="quick-add-row">
+        <div class="qa-btn">
+          <div class="qa-icon">📸</div>
+          <div class="qa-label">PHOTO IA</div>
+        </div>
+        <div class="qa-btn">
+          <div class="qa-icon">✏️</div>
+          <div class="qa-label">MANUEL</div>
+        </div>
+        <div class="qa-btn">
+          <div class="qa-icon">🔍</div>
+          <div class="qa-label">RECHERCHE</div>
+        </div>
+        <div class="qa-btn">
+          <div class="qa-icon">📋</div>
+          <div class="qa-label">RECENTS</div>
+        </div>
+      </div>
+
+      <!-- BODY METRICS -->
+      <p class="sh">▸ MES MÉTRIQUES</p>
+      <div class="metrics-row">
+        <div class="metric-card mc-w">
+          <div class="metric-val mv-blue">68.4</div>
+          <div class="metric-unit">kg — Poids</div>
+          <div class="metric-trend trend-down">▼ -0.6kg cette semaine</div>
+        </div>
+        <div class="metric-card mc-m">
+          <div class="metric-val mv-green">42%</div>
+          <div class="metric-unit">Masse musculaire</div>
+          <div class="metric-trend trend-up">▲ +0.8% ce mois</div>
+        </div>
+        <div class="metric-card mc-f">
+          <div class="metric-val mv-orange">18%</div>
+          <div class="metric-unit">Masse grasse</div>
+          <div class="metric-trend trend-down">▼ -1.2% ce mois</div>
+        </div>
+        <div class="metric-card mc-h">
+          <div class="metric-val mv-purple">94</div>
+          <div class="metric-unit">Hydratation %</div>
+          <div class="metric-trend" style="color:var(--muted);">→ Stable</div>
+        </div>
+      </div>
+
+      <!-- MEALS TODAY -->
+      <p class="sh">▸ REPAS DU JOUR</p>
+      <div class="card c-green">
+        <div class="meal-item">
+          <div class="meal-icon mi-bg1">🍳</div>
+          <div class="meal-info">
+            <div class="meal-name">Petit déj — Œufs + avocat</div>
+            <div class="meal-cal">P: 28g · G: 12g · L: 18g</div>
+          </div>
+          <div class="meal-kcal">380</div>
+        </div>
+        <div class="meal-item">
+          <div class="meal-icon mi-bg2">🥗</div>
+          <div class="meal-info">
+            <div class="meal-name">Déjeuner — Bowl poulet riz</div>
+            <div class="meal-cal">P: 52g · G: 78g · L: 12g</div>
+          </div>
+          <div class="meal-kcal">640</div>
+        </div>
+        <div class="meal-item">
+          <div class="meal-icon mi-bg3">🍫</div>
+          <div class="meal-info">
+            <div class="meal-name">Snack — Whey + banane</div>
+            <div class="meal-cal">P: 32g · G: 28g · L: 4g</div>
+          </div>
+          <div class="meal-kcal">400</div>
+        </div>
+        <div class="meal-item" style="border:none;opacity:0.4;">
+          <div class="meal-icon mi-bg4">🍽️</div>
+          <div class="meal-info">
+            <div class="meal-name">Dîner — À planifier</div>
+            <div class="meal-cal">Reste 580 kcal</div>
+          </div>
+          <div style="font-size:18px;color:var(--muted);">+</div>
+        </div>
+      </div>
+    </div>
+    <div class="bnav">
+      <div class="bi on"><div class="bico">🏠</div>ACCUEIL</div>
+      <div class="bi"><div class="bico">📸</div>CALORIES</div>
+      <div class="bi"><div class="bico">⚖️</div>POIDS</div>
+      <div class="bi"><div class="bico">🏆</div>DÉFIS</div>
+      <div class="bi"><div class="bico">👤</div>PROFIL</div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== PHONE 2: CAMERA IA ===== -->
+<div class="phone-wrap">
+  <div class="phone-label">02 — CALORIES PHOTO IA</div>
+  <div class="phone ph-pink">
+    <div class="notch"><div class="notch-pill"><div class="nm"></div><div class="nc"></div></div></div>
+    <div class="status"><span>9:41</span><span>▪▪▪</span></div>
+    <div class="screen">
+      <div class="top-bar">
+        <div class="screen-title" style="color:var(--pink);font-size:11px;">📸 SCAN CALORIES</div>
+        <div style="font-family:'Press Start 2P',monospace;font-size:6px;color:var(--muted);">HISTORIQUE</div>
+      </div>
+
+      <!-- CAMERA -->
+      <div class="camera-view">
+        <div class="cam-bg">
+          <div class="food-emoji">🥗</div>
+        </div>
+        <div class="cam-overlay">
+          <div class="cam-corner cc-tl"></div>
+          <div class="cam-corner cc-tr"></div>
+          <div class="cam-corner cc-bl"></div>
+          <div class="cam-corner cc-br"></div>
+          <div class="cam-scan"></div>
+          <div class="cam-badge">⚡ IA EN COURS D'ANALYSE...</div>
+          <div class="cam-result">
+            <div>
+              <div class="cr-food">Bowl César Poulet</div>
+              <div style="font-size:10px;color:var(--muted);margin-top:2px;">Confiance : 94%</div>
+            </div>
+            <div class="cr-kcal">487 kcal</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- AI TAG -->
+      <div class="ai-tag">
+        <div class="ai-dot"></div>
+        ANALYSE IA — RÉSULTAT DÉTECTÉ
+      </div>
+
+      <!-- NUTRITION BREAKDOWN -->
+      <div class="nutrition-breakdown">
+        <div class="nb-item nb-kcal">
+          <div class="nb-val">487</div>
+          <div class="nb-label">kcal</div>
+        </div>
+        <div class="nb-item nb-prot">
+          <div class="nb-val" style="color:var(--blue);">38g</div>
+          <div class="nb-label">protéines</div>
+        </div>
+        <div class="nb-item nb-gluc">
+          <div class="nb-val" style="color:var(--yellow);">42g</div>
+          <div class="nb-label">glucides</div>
+        </div>
+        <div class="nb-item nb-fat">
+          <div class="nb-val" style="color:var(--orange);">14g</div>
+          <div class="nb-label">lipides</div>
+        </div>
+      </div>
+
+      <!-- INGREDIENTS -->
+      <div class="card c-pink" style="margin-bottom:10px;">
+        <div style="font-family:'Press Start 2P',monospace;font-size:7px;color:var(--pink);letter-spacing:1px;margin-bottom:10px;">INGRÉDIENTS DÉTECTÉS</div>
+        <div style="display:flex;flex-direction:column;gap:6px;">
+          <div style="display:flex;justify-content:space-between;align-items:center;">
+            <span style="font-size:12px;">🐔 Poulet grillé (150g)</span>
+            <span style="font-family:'Press Start 2P',monospace;font-size:7px;color:var(--blue);">P: 28g</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center;">
+            <span style="font-size:12px;">🥬 Salade romaine (80g)</span>
+            <span style="font-family:'Press Start 2P',monospace;font-size:7px;color:var(--green);">12 kcal</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center;">
+            <span style="font-size:12px;">🧀 Parmesan (20g)</span>
+            <span style="font-family:'Press Start 2P',monospace;font-size:7px;color:var(--orange);">L: 6g</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center;">
+            <span style="font-size:12px;">🫙 Sauce César (30ml)</span>
+            <span style="font-family:'Press Start 2P',monospace;font-size:7px;color:var(--yellow);">G: 4g</span>
+          </div>
+        </div>
+      </div>
+
+      <button class="add-food-btn">✚ AJOUTER À MES REPAS</button>
+      <button class="manual-btn">✏️ CORRIGER MANUELLEMENT</button>
+
+      <div class="recent-foods" style="margin-top:14px;">
+        <p>▸ RÉCEMMENT SCANNÉS</p>
+        <div class="food-chip-row">
+          <div class="food-chip">🍳 Œufs brouillés</div>
+          <div class="food-chip">🍌 Banane</div>
+          <div class="food-chip">🥛 Whey</div>
+          <div class="food-chip">🍚 Riz basmati</div>
+          <div class="food-chip">🥑 Avocat</div>
+        </div>
+      </div>
+    </div>
+    <div class="bnav">
+      <div class="bi"><div class="bico">🏠</div>ACCUEIL</div>
+      <div class="bi on2" style="color:var(--pink);text-shadow:0 0 8px var(--pink);"><div class="bico">📸</div>CALORIES</div>
+      <div class="bi"><div class="bico">⚖️</div>POIDS</div>
+      <div class="bi"><div class="bico">🏆</div>DÉFIS</div>
+      <div class="bi"><div class="bico">👤</div>PROFIL</div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== PHONE 3: MANUAL ENTRY ===== -->
+<div class="phone-wrap">
+  <div class="phone-label">03 — SAISIE MANUELLE</div>
+  <div class="phone ph-blue">
+    <div class="notch"><div class="notch-pill"><div class="nm"></div><div class="nc"></div></div></div>
+    <div class="status"><span>9:41</span><span>▪▪▪</span></div>
+    <div class="screen">
+      <div class="manual-header">
+        <div class="mh-title">✏️ SAISIE REPAS</div>
+        <div class="mh-sub">Entre tes infos manuellement</div>
+      </div>
+
+      <!-- TABS -->
+      <div class="tab-row">
+        <button class="tab on">ALIMENT</button>
+        <button class="tab">RECETTE</button>
+        <button class="tab">SUPPLÉMENT</button>
+      </div>
+
+      <!-- MEAL TIME -->
+      <p class="sh">▸ MOMENT DU REPAS</p>
+      <div class="meal-time-row">
+        <button class="mt-btn">🌅 MATIN</button>
+        <button class="mt-btn on">☀️ MIDI</button>
+        <button class="mt-btn">🌆 GOÛTER</button>
+        <button class="mt-btn">🌙 SOIR</button>
+      </div>
+
+      <!-- INPUTS -->
+      <div class="input-group">
+        <div class="input-label">▸ NOM DE L'ALIMENT</div>
+        <input class="input-field" placeholder="Ex : Blanc de poulet..." value="Blanc de poulet grillé">
+      </div>
+
+      <div class="input-row">
+        <div class="input-group" style="margin-bottom:0;">
+          <div class="input-label">▸ QUANTITÉ (g)</div>
+          <input class="input-field" placeholder="150" value="150">
+        </div>
+        <div class="input-group" style="margin-bottom:0;">
+          <div class="input-label">▸ CALORIES</div>
+          <input class="input-field" placeholder="kcal" value="165">
+        </div>
+      </div>
+
+      <!-- MACRO SLIDERS -->
+      <p class="sh" style="margin-top:14px;">▸ MACRONUTRIMENTS</p>
+      <div class="macro-sliders">
+        <div class="slider-item">
+          <div class="sl-header">
+            <div class="sl-name">🔵 Protéines</div>
+            <div class="sl-val sl-blue">31g</div>
+          </div>
+          <div class="sl-track"><div class="sl-fill sf-blue"></div></div>
+        </div>
+        <div class="slider-item">
+          <div class="sl-header">
+            <div class="sl-name">🟡 Glucides</div>
+            <div class="sl-val sl-yellow">0g</div>
+          </div>
+          <div class="sl-track"><div class="sl-fill sf-yellow" style="width:2%;"></div></div>
+        </div>
+        <div class="slider-item">
+          <div class="sl-header">
+            <div class="sl-name">🟠 Lipides</div>
+            <div class="sl-val sl-orange">3.6g</div>
+          </div>
+          <div class="sl-track"><div class="sl-fill sf-orange" style="width:18%;"></div></div>
+        </div>
+      </div>
+
+      <!-- PROTEIN TRACKER -->
+      <div class="protein-card">
+        <div class="prot-header">
+          <div class="prot-title">🔵 OBJECTIF PROTÉINES</div>
+          <div class="prot-val">112 / 155g</div>
+        </div>
+        <div class="prot-bar-wrap">
+          <div class="prot-bar"><div class="prot-fill"></div></div>
+        </div>
+        <div style="font-size:11px;color:var(--muted);margin-bottom:10px;">Il te reste <span style="color:var(--blue);font-weight:700;">43g</span> de protéines à atteindre aujourd'hui</div>
+        <div class="prot-sources">
+          <div class="ps-chip">🐔 Poulet <span class="ps-g">31g</span></div>
+          <div class="ps-chip">🥛 Whey <span class="ps-g">25g</span></div>
+          <div class="ps-chip">🥚 Œufs <span class="ps-g">18g</span></div>
+          <div class="ps-chip">🐟 Thon <span class="ps-g">22g</span></div>
+          <div class="ps-chip">🧀 Fromage <span class="ps-g">16g</span></div>
+        </div>
+      </div>
+
+      <button class="save-btn">💾 ENREGISTRER LE REPAS</button>
+    </div>
+    <div class="bnav">
+      <div class="bi"><div class="bico">🏠</div>ACCUEIL</div>
+      <div class="bi on2"><div class="bico">📸</div>CALORIES</div>
+      <div class="bi"><div class="bico">⚖️</div>POIDS</div>
+      <div class="bi"><div class="bico">🏆</div>DÉFIS</div>
+      <div class="bi"><div class="bico">👤</div>PROFIL</div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== PHONE 4: SMART SCALE & BODY ===== -->
+<div class="phone-wrap">
+  <div class="phone-label">04 — BALANCE & SUIVI CORPOREL</div>
+  <div class="phone ph-purple">
+    <div class="notch"><div class="notch-pill"><div class="nm"></div><div class="nc"></div></div></div>
+    <div class="status"><span>9:41</span><span>▪▪▪</span></div>
+    <div class="screen">
+      <div class="device-header">
+        <div class="dh-title">⚖️ APPAREILS & CORPS</div>
+        <div class="dh-sub">Balance, montre, capteurs connectés</div>
+      </div>
+
+      <!-- CONNECTED DEVICES -->
+      <p class="sh">▸ APPAREILS CONNECTÉS</p>
+      <div class="device-card">
+        <div class="device-icon-wrap di-scale">⚖️</div>
+        <div class="device-info">
+          <div class="device-name">Balance Withings Body+</div>
+          <div class="device-status ds-connected">● CONNECTÉE · SYNC IL Y A 2H</div>
+        </div>
+        <div class="device-data dd-purple">68.4kg</div>
+      </div>
+      <div class="device-card">
+        <div class="device-icon-wrap di-watch">⌚</div>
+        <div class="device-info">
+          <div class="device-name">Apple Watch Series 9</div>
+          <div class="device-status ds-connected">● CONNECTÉE · EN DIRECT</div>
+        </div>
+        <div class="device-data dd-green">♥ 72bpm</div>
+      </div>
+      <div class="device-card">
+        <div class="device-icon-wrap di-hr">📡</div>
+        <div class="device-info">
+          <div class="device-name">Garmin HRM-Pro</div>
+          <div class="device-status ds-syncing">⟳ SYNCHRONISATION...</div>
+        </div>
+        <div class="device-data dd-pink">VO2: 48</div>
+      </div>
+      <div class="device-card" style="opacity:0.5;">
+        <div class="device-icon-wrap di-app">📱</div>
+        <div class="device-info">
+          <div class="device-name">Google Fit · Samsung Health</div>
+          <div class="device-status ds-offline">○ NON CONNECTÉ</div>
+        </div>
+        <div style="font-family:'Press Start 2P',monospace;font-size:7px;color:var(--muted);">+ LIER</div>
+      </div>
+
+      <!-- BODY COMPOSITION -->
+      <p class="sh">▸ COMPOSITION CORPORELLE</p>
+      <div class="body-comp">
+        <div class="bc-title">MESURE — 14 AVRIL 2026</div>
+        <div class="bc-avatar-row">
+          <div class="body-silhouette">🧍</div>
+          <div class="bc-main-stats" style="flex:1;">
+            <div class="bcs-item">
+              <div class="bcs-label"><span>💚 Masse musculaire</span><span>28.7kg / 42%</span></div>
+              <div class="bcs-bar"><div class="bcs-fill bcf-muscle"></div></div>
+            </div>
+            <div class="bcs-item">
+              <div class="bcs-label"><span>🟠 Masse grasse</span><span>12.3kg / 18%</span></div>
+              <div class="bcs-bar"><div class="bcs-fill bcf-fat"></div></div>
+            </div>
+            <div class="bcs-item">
+              <div class="bcs-label"><span>🔵 Eau corporelle</span><span>41.7kg / 61%</span></div>
+              <div class="bcs-bar"><div class="bcs-fill bcf-water"></div></div>
+            </div>
+            <div class="bcs-item">
+              <div class="bcs-label"><span>🟣 Masse osseuse</span><span>3.2kg / 4.7%</span></div>
+              <div class="bcs-bar"><div class="bcs-fill bcf-bone"></div></div>
+            </div>
+          </div>
+        </div>
+        <div style="display:flex;gap:8px;">
+          <div style="flex:1;background:#1a1d2e;border-radius:10px;padding:10px;text-align:center;">
+            <div style="font-family:'Press Start 2P',monospace;font-size:10px;color:var(--purple);margin-bottom:3px;">21.8</div>
+            <div style="font-size:10px;color:var(--muted);">IMC</div>
+          </div>
+          <div style="flex:1;background:#1a1d2e;border-radius:10px;padding:10px;text-align:center;">
+            <div style="font-family:'Press Start 2P',monospace;font-size:10px;color:var(--green);margin-bottom:3px;">1680</div>
+            <div style="font-size:10px;color:var(--muted);">BMR kcal</div>
+          </div>
+          <div style="flex:1;background:#1a1d2e;border-radius:10px;padding:10px;text-align:center;">
+            <div style="font-family:'Press Start 2P',monospace;font-size:10px;color:var(--blue);margin-bottom:3px;">28</div>
+            <div style="font-size:10px;color:var(--muted);">Âge métab.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- PROGRESS CHART -->
+      <div class="progress-chart">
+        <div class="pc-header">
+          <div class="pc-title">📈 ÉVOLUTION DU POIDS</div>
+          <div class="pc-period">
+            <button class="period-btn">1S</button>
+            <button class="period-btn on">1M</button>
+            <button class="period-btn">3M</button>
+            <button class="period-btn">1A</button>
+          </div>
+        </div>
+        <div class="mini-chart">
+          <div class="chart-grid">
+            <div class="chart-line"></div>
+            <div class="chart-line"></div>
+            <div class="chart-line"></div>
+            <div class="chart-line"></div>
+          </div>
+          <svg class="chart-svg" viewBox="0 0 320 80" preserveAspectRatio="none">
+            <defs>
+              <linearGradient id="chartGrad" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="var(--purple)" stop-opacity="0.4"/>
+                <stop offset="100%" stop-color="var(--purple)" stop-opacity="0"/>
+              </linearGradient>
+            </defs>
+            <path d="M0,60 C20,58 40,55 60,52 C80,49 100,50 120,47 C140,44 160,46 180,43 C200,40 220,38 240,36 C260,34 280,32 300,28 L320,26 L320,80 L0,80Z" fill="url(#chartGrad)"/>
+            <path d="M0,60 C20,58 40,55 60,52 C80,49 100,50 120,47 C140,44 160,46 180,43 C200,40 220,38 240,36 C260,34 280,32 300,28 L320,26" fill="none" stroke="var(--purple)" stroke-width="2.5" style="filter:drop-shadow(0 0 4px var(--purple));"/>
+            <circle cx="320" cy="26" r="5" fill="var(--purple)" style="filter:drop-shadow(0 0 6px var(--purple));"/>
+          </svg>
+        </div>
+        <div class="weight-labels">
+          <span>1 Mar</span><span>8 Mar</span><span>15 Mar</span><span>22 Mar</span><span>29 Mar</span><span>Auj.</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;margin-top:10px;">
+          <div style="text-align:center;">
+            <div style="font-family:'Press Start 2P',monospace;font-size:10px;color:var(--pink);">70.2</div>
+            <div style="font-size:9px;color:var(--muted);">Départ</div>
+          </div>
+          <div style="text-align:center;">
+            <div style="font-family:'Press Start 2P',monospace;font-size:10px;color:var(--green);">68.4</div>
+            <div style="font-size:9px;color:var(--muted);">Aujourd'hui</div>
+          </div>
+          <div style="text-align:center;">
+            <div style="font-family:'Press Start 2P',monospace;font-size:10px;color:var(--yellow);">65.0</div>
+            <div style="font-size:9px;color:var(--muted);">Objectif</div>
+          </div>
+          <div style="text-align:center;">
+            <div style="font-family:'Press Start 2P',monospace;font-size:10px;color:var(--green);">-1.8kg</div>
+            <div style="font-size:9px;color:var(--muted);">Ce mois</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SMART ALERTS -->
+      <p class="sh">▸ RECOMMANDATIONS IA</p>
+      <div class="alert-card ac-green">
+        <div class="alert-icon">💪</div>
+        <div class="alert-text">
+          <h4>Masse musculaire en hausse</h4>
+          <p>+0.8% ce mois. Continue à viser 155g de protéines/jour pour maintenir cette tendance.</p>
+        </div>
+      </div>
+      <div class="alert-card ac-blue">
+        <div class="alert-icon">💧</div>
+        <div class="alert-text">
+          <h4>Hydratation optimale</h4>
+          <p>Ton taux d'eau corporelle (61%) est dans la zone idéale. Maintiens 2.5L/jour.</p>
+        </div>
+      </div>
+      <div class="alert-card ac-orange">
+        <div class="alert-icon">⚡</div>
+        <div class="alert-text">
+          <h4>Jour de repos recommandé</h4>
+          <p>Fréquence cardiaque de repos : 72bpm. Ton corps récupère bien, mais évite le HIIT demain.</p>
+        </div>
+      </div>
+
+    </div>
+    <div class="bnav">
+      <div class="bi"><div class="bico">🏠</div>ACCUEIL</div>
+      <div class="bi"><div class="bico">📸</div>CALORIES</div>
+      <div class="bi on2" style="color:var(--purple);text-shadow:0 0 8px var(--purple);"><div class="bico">⚖️</div>POIDS</div>
+      <div class="bi"><div class="bico">🏆</div>DÉFIS</div>
+      <div class="bi"><div class="bico">👤</div>PROFIL</div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700;900&family=DM+Sans:wght@300;400;500;600&display=swap');
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#111010;--sf:#1C1B1B;--sf2:#252423;--red:#E8220A;--mu:#6B6966;--txt:#F0EDE8;--wa:#C9C4BC;--bl:#00C2FF;--gr:#00E676;--go:#D4AF37}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--txt)}
+.app{max-width:420px;margin:0 auto}
+.hd{padding:22px 20px 16px;border-bottom:1px solid #2a2826}
+.logo{font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:30px;letter-spacing:-.5px}
+.logo span{color:var(--red)}
+.sub{font-size:12px;color:var(--mu);margin-top:3px}
+.scan-bar{margin:16px 20px;background:var(--sf);border-radius:8px;padding:16px;border:1px solid #2a2826;display:flex;align-items:center;justify-content:space-between}
+.scan-status{display:flex;align-items:center;gap:10px}
+.bt-icon{width:36px;height:36px;border-radius:50%;background:rgba(0,194,255,.15);display:flex;align-items:center;justify-content:center;font-size:18px}
+.bt-icon.scanning{animation:pulse 1.5s infinite}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.6;transform:scale(.95)}}
+.scan-lbl{font-size:13px;font-weight:600}
+.scan-sub{font-size:11px;color:var(--mu);margin-top:2px}
+.scan-btn{background:var(--red);border:none;border-radius:6px;padding:9px 16px;color:var(--txt);font-size:12px;font-weight:700;letter-spacing:1px;text-transform:uppercase;cursor:pointer;font-family:'DM Sans',sans-serif}
+.scan-btn.stop{background:var(--sf2);color:var(--mu);border:1px solid #333}
+.cat-tabs{display:flex;gap:6px;padding:12px 20px;overflow-x:auto;scrollbar-width:none}
+.cat{padding:7px 14px;border-radius:20px;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;border:1px solid #2a2826;background:var(--sf2);color:var(--mu);cursor:pointer;white-space:nowrap;font-family:'DM Sans',sans-serif;transition:all .2s}
+.cat.on{background:var(--red);color:var(--txt);border-color:var(--red)}
+.conn-hd{padding:0 20px 12px;display:flex;align-items:center;justify-content:space-between}
+.stitle{font-size:10px;color:var(--mu);text-transform:uppercase;letter-spacing:2px}
+.conn-count{font-size:12px;color:var(--gr);font-weight:600}
+.device-list{padding:0 20px 20px}
+.device{background:var(--sf);border:1px solid #2a2826;border-radius:10px;padding:14px;margin-bottom:10px;transition:all .3s}
+.device.connected{border-color:rgba(0,230,118,.4)}
+.device.connecting{border-color:rgba(0,194,255,.4)}
+@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+.device.found{animation:fadeIn .4s ease}
+.d-row{display:flex;align-items:center;gap:12px}
+.d-icon{width:44px;height:44px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0}
+.d-info{flex:1}
+.d-name{font-size:14px;font-weight:600}
+.d-brand{font-size:11px;color:var(--mu);margin-top:2px}
+.d-signal{display:flex;align-items:center;gap:3px;margin-top:3px}
+.sig-bar{width:3px;border-radius:1px;background:#333}
+.sig-bar.on{background:var(--gr)}
+.d-btn{padding:8px 14px;border-radius:6px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;cursor:pointer;font-family:'DM Sans',sans-serif;border:none;transition:all .2s;white-space:nowrap}
+.d-btn.connect{background:var(--red);color:var(--txt)}
+.d-btn.connected{background:rgba(0,230,118,.15);color:var(--gr);border:1px solid rgba(0,230,118,.3)}
+.d-btn.connecting{background:rgba(0,194,255,.1);color:var(--bl);border:1px solid rgba(0,194,255,.3)}
+.d-data{margin-top:12px;padding-top:12px;border-top:1px solid #2a2826;display:none;grid-template-columns:repeat(3,1fr);gap:8px}
+.device.connected .d-data{display:grid}
+.d-metric{background:var(--sf2);border-radius:6px;padding:10px 8px;text-align:center}
+.d-metric-val{font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:900}
+.d-metric-lbl{font-size:10px;color:var(--mu);margin-top:2px}
+.compat-section{margin:0 20px 24px;background:var(--sf);border-radius:10px;padding:14px;border:1px solid #2a2826}
+.compat-title{font-size:11px;color:var(--mu);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:12px}
+.compat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.compat-item{text-align:center}
+.compat-logo{font-size:22px;margin-bottom:4px}
+.compat-name{font-size:10px;color:var(--mu)}
+.compat-check{font-size:10px;color:var(--gr);margin-top:1px}
+</style></head><body>
+<div class="app">
+  <div class="hd">
+    <div class="logo">SQUAD <span>Connect</span></div>
+    <div class="sub">Appareils Bluetooth — sync automatique</div>
+  </div>
+  <div class="scan-bar">
+    <div class="scan-status">
+      <div class="bt-icon scanning" id="bt-icon">📡</div>
+      <div>
+        <div class="scan-lbl" id="scan-lbl">Recherche en cours...</div>
+        <div class="scan-sub" id="scan-sub">8 appareils trouvés à proximité</div>
+      </div>
+    </div>
+    <button class="scan-btn stop" id="scan-btn" onclick="toggleScan()">Stop</button>
+  </div>
+  <div class="cat-tabs">
+    <div class="cat on" onclick="filterCat('all',this)">Tous</div>
+    <div class="cat" onclick="filterCat('montre',this)">Montres</div>
+    <div class="cat" onclick="filterCat('balance',this)">Balances</div>
+    <div class="cat" onclick="filterCat('cardio',this)">Cardio</div>
+    <div class="cat" onclick="filterCat('sport',this)">Sport</div>
+    <div class="cat" onclick="filterCat('autre',this)">Autres</div>
+  </div>
+  <div class="conn-hd">
+    <div class="stitle">Appareils</div>
+    <div class="conn-count" id="conn-count">2 connectés</div>
+  </div>
+  <div class="device-list" id="device-list">
+
+    <div class="device connected" data-cat="montre" id="dev-aw">
+      <div class="d-row">
+        <div class="d-icon" style="background:rgba(255,255,255,.06)">⌚</div>
+        <div class="d-info">
+          <div class="d-name">Apple Watch Series 9</div>
+          <div class="d-brand">Apple · Montre connectée</div>
+          <div class="d-signal"><div class="sig-bar on" style="height:4px"></div><div class="sig-bar on" style="height:7px"></div><div class="sig-bar on" style="height:10px"></div><div class="sig-bar on" style="height:13px"></div><span style="font-size:10px;color:var(--gr);margin-left:4px">Fort</span></div>
+        </div>
+        <button class="d-btn connected">✓ Connecté</button>
+      </div>
+      <div class="d-data">
+        <div class="d-metric"><div class="d-metric-val" style="color:var(--red)">72</div><div class="d-metric-lbl">BPM</div></div>
+        <div class="d-metric"><div class="d-metric-val" style="color:var(--go)">8 420</div><div class="d-metric-lbl">Pas</div></div>
+        <div class="d-metric"><div class="d-metric-val" style="color:var(--gr)">420</div><div class="d-metric-lbl">kcal</div></div>
+      </div>
+    </div>
+
+    <div class="device connected" data-cat="balance" id="dev-wi">
+      <div class="d-row">
+        <div class="d-icon" style="background:rgba(0,194,255,.08)">⚖️</div>
+        <div class="d-info">
+          <div class="d-name">Withings Body+ Scale</div>
+          <div class="d-brand">Withings · Balance connectée</div>
+          <div class="d-signal"><div class="sig-bar on" style="height:4px"></div><div class="sig-bar on" style="height:7px"></div><div class="sig-bar on" style="height:10px"></div><div class="sig-bar" style="height:13px"></div><span style="font-size:10px;color:var(--go);margin-left:4px">Bon</span></div>
+        </div>
+        <button class="d-btn connected">✓ Connecté</button>
+      </div>
+      <div class="d-data">
+        <div class="d-metric"><div class="d-metric-val" style="color:var(--bl)">73.4</div><div class="d-metric-lbl">kg</div></div>
+        <div class="d-metric"><div class="d-metric-val" style="color:var(--gr)">18.2</div><div class="d-metric-lbl">% graisse</div></div>
+        <div class="d-metric"><div class="d-metric-val" style="color:var(--go)">62.1</div><div class="d-metric-lbl">kg muscle</div></div>
+      </div>
+    </div>
+
+    <div class="device found" data-cat="montre" id="dev-ga">
+      <div class="d-row">
+        <div class="d-icon" style="background:rgba(212,175,55,.08)">🏃</div>
+        <div class="d-info"><div class="d-name">Garmin Forerunner 265</div><div class="d-brand">Garmin · GPS Running Watch</div><div class="d-signal"><div class="sig-bar on" style="height:4px"></div><div class="sig-bar on" style="height:7px"></div><div class="sig-bar" style="height:10px"></div><div class="sig-bar" style="height:13px"></div><span style="font-size:10px;color:var(--mu);margin-left:4px">Faible</span></div></div>
+        <button class="d-btn connect" onclick="connectDevice('dev-ga',this,'68','km/h','BPM','12.4','380')">Connecter</button>
+      </div>
+    </div>
+
+    <div class="device found" data-cat="cardio" id="dev-po">
+      <div class="d-row">
+        <div class="d-icon" style="background:rgba(232,34,10,.08)">❤️</div>
+        <div class="d-info"><div class="d-name">Polar H10</div><div class="d-brand">Polar · Ceinture cardio-fréquencemètre</div><div class="d-signal"><div class="sig-bar on" style="height:4px"></div><div class="sig-bar on" style="height:7px"></div><div class="sig-bar on" style="height:10px"></div><div class="sig-bar on" style="height:13px"></div><span style="font-size:10px;color:var(--gr);margin-left:4px">Fort</span></div></div>
+        <button class="d-btn connect" onclick="connectDevice('dev-po',this,'74','BPM','VO2','92%','Haute')">Connecter</button>
+      </div>
+    </div>
+
+    <div class="device found" data-cat="montre" id="dev-fi">
+      <div class="d-row">
+        <div class="d-icon" style="background:rgba(0,194,255,.08)">💙</div>
+        <div class="d-info"><div class="d-name">Fitbit Charge 6</div><div class="d-brand">Google · Bracelet connecté</div><div class="d-signal"><div class="sig-bar on" style="height:4px"></div><div class="sig-bar on" style="height:7px"></div><div class="sig-bar on" style="height:10px"></div><div class="sig-bar" style="height:13px"></div><span style="font-size:10px;color:var(--go);margin-left:4px">Bon</span></div></div>
+        <button class="d-btn connect" onclick="connectDevice('dev-fi',this,'71','BPM','Pas','7820','350')">Connecter</button>
+      </div>
+    </div>
+
+    <div class="device found" data-cat="montre" id="dev-sa">
+      <div class="d-row">
+        <div class="d-icon" style="background:rgba(180,77,255,.08)">🔵</div>
+        <div class="d-info"><div class="d-name">Samsung Galaxy Watch 6</div><div class="d-brand">Samsung · Montre connectée</div><div class="d-signal"><div class="sig-bar on" style="height:4px"></div><div class="sig-bar on" style="height:7px"></div><div class="sig-bar" style="height:10px"></div><div class="sig-bar" style="height:13px"></div><span style="font-size:10px;color:var(--mu);margin-left:4px">Faible</span></div></div>
+        <button class="d-btn connect" onclick="connectDevice('dev-sa',this,'69','BPM','SpO2','97%','6h40')">Connecter</button>
+      </div>
+    </div>
+
+    <div class="device found" data-cat="sport" id="dev-su">
+      <div class="d-row">
+        <div class="d-icon" style="background:rgba(0,230,118,.08)">🟢</div>
+        <div class="d-info"><div class="d-name">Suunto 9 Peak Pro</div><div class="d-brand">Suunto · Montre outdoor & triathlon</div><div class="d-signal"><div class="sig-bar on" style="height:4px"></div><div class="sig-bar on" style="height:7px"></div><div class="sig-bar on" style="height:10px"></div><div class="sig-bar on" style="height:13px"></div><span style="font-size:10px;color:var(--gr);margin-left:4px">Fort</span></div></div>
+        <button class="d-btn connect" onclick="connectDevice('dev-su',this,'70','BPM','GPS','OK','450')">Connecter</button>
+      </div>
+    </div>
+
+    <div class="device found" data-cat="cardio" id="dev-wa">
+      <div class="d-row">
+        <div class="d-icon" style="background:rgba(232,34,10,.08)">🚴</div>
+        <div class="d-info"><div class="d-name">Wahoo TICKR X</div><div class="d-brand">Wahoo · Cardio + cadence</div><div class="d-signal"><div class="sig-bar on" style="height:4px"></div><div class="sig-bar on" style="height:7px"></div><div class="sig-bar on" style="height:10px"></div><div class="sig-bar" style="height:13px"></div><span style="font-size:10px;color:var(--go);margin-left:4px">Bon</span></div></div>
+        <button class="d-btn connect" onclick="connectDevice('dev-wa',this,'76','BPM','Cadence','22rpm','Haute')">Connecter</button>
+      </div>
+    </div>
+
+    <div class="device found" data-cat="autre" id="dev-ou">
+      <div class="d-row">
+        <div class="d-icon" style="background:rgba(212,175,55,.08)">💍</div>
+        <div class="d-info"><div class="d-name">Oura Ring Gen 3</div><div class="d-brand">Oura · Bague tracking sommeil & santé</div><div class="d-signal"><div class="sig-bar on" style="height:4px"></div><div class="sig-bar on" style="height:7px"></div><div class="sig-bar on" style="height:10px"></div><div class="sig-bar on" style="height:13px"></div><span style="font-size:10px;color:var(--gr);margin-left:4px">Fort</span></div></div>
+        <button class="d-btn connect" onclick="connectDevice('dev-ou',this,'6h50','Sommeil','Score','82','36.8°')">Connecter</button>
+      </div>
+    </div>
+
+    <div class="device found" data-cat="montre" id="dev-am">
+      <div class="d-row">
+        <div class="d-icon" style="background:rgba(0,194,255,.08)">⌚</div>
+        <div class="d-info"><div class="d-name">Amazfit GTR 4</div><div class="d-brand">Zepp · Montre sport GPS</div><div class="d-signal"><div class="sig-bar on" style="height:4px"></div><div class="sig-bar on" style="height:7px"></div><div class="sig-bar" style="height:10px"></div><div class="sig-bar" style="height:13px"></div><span style="font-size:10px;color:var(--go);margin-left:4px">Bon</span></div></div>
+        <button class="d-btn connect" onclick="connectDevice('dev-am',this,'73','BPM','GPS','ON','390')">Connecter</button>
+      </div>
+    </div>
+
+    <div class="device found" data-cat="balance" id="dev-bo">
+      <div class="d-row">
+        <div class="d-icon" style="background:rgba(180,77,255,.08)">⚖️</div>
+        <div class="d-info"><div class="d-name">Bosch Body Analyze</div><div class="d-brand">Bosch · Balance impédancemètre</div><div class="d-signal"><div class="sig-bar on" style="height:4px"></div><div class="sig-bar on" style="height:7px"></div><div class="sig-bar on" style="height:10px"></div><div class="sig-bar" style="height:13px"></div><span style="font-size:10px;color:var(--go);margin-left:4px">Bon</span></div></div>
+        <button class="d-btn connect" onclick="connectDevice('dev-bo',this,'74.2','kg','Graisse','19.1%','Muscle')">Connecter</button>
+      </div>
+    </div>
+
+    <div class="device found" data-cat="sport" id="dev-hw">
+      <div class="d-row">
+        <div class="d-icon" style="background:rgba(212,175,55,.08)">🟠</div>
+        <div class="d-info"><div class="d-name">Huawei Watch GT 4</div><div class="d-brand">Huawei · Montre sport & santé</div><div class="d-signal"><div class="sig-bar on" style="height:4px"></div><div class="sig-bar on" style="height:7px"></div><div class="sig-bar on" style="height:10px"></div><div class="sig-bar on" style="height:13px"></div><span style="font-size:10px;color:var(--gr);margin-left:4px">Fort</span></div></div>
+        <button class="d-btn connect" onclick="connectDevice('dev-hw',this,'71','BPM','SpO2','98%','Stress: 28')">Connecter</button>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="compat-section">
+    <div class="compat-title">Compatibilité certifiée · 20+ marques</div>
+    <div class="compat-grid">
+      <div class="compat-item"><div class="compat-logo">⌚</div><div class="compat-name">Apple Watch</div><div class="compat-check">✓</div></div>
+      <div class="compat-item"><div class="compat-logo">🏃</div><div class="compat-name">Garmin</div><div class="compat-check">✓</div></div>
+      <div class="compat-item"><div class="compat-logo">⚖️</div><div class="compat-name">Withings</div><div class="compat-check">✓</div></div>
+      <div class="compat-item"><div class="compat-logo">❤️</div><div class="compat-name">Polar</div><div class="compat-check">✓</div></div>
+      <div class="compat-item"><div class="compat-logo">💙</div><div class="compat-name">Fitbit</div><div class="compat-check">✓</div></div>
+      <div class="compat-item"><div class="compat-logo">🔵</div><div class="compat-name">Samsung</div><div class="compat-check">✓</div></div>
+      <div class="compat-item"><div class="compat-logo">🟢</div><div class="compat-name">Suunto</div><div class="compat-check">✓</div></div>
+      <div class="compat-item"><div class="compat-logo">💍</div><div class="compat-name">Oura</div><div class="compat-check">✓</div></div>
+      <div class="compat-item"><div class="compat-logo">🚴</div><div class="compat-name">Wahoo</div><div class="compat-check">✓</div></div>
+      <div class="compat-item"><div class="compat-logo">⌚</div><div class="compat-name">Amazfit</div><div class="compat-check">✓</div></div>
+      <div class="compat-item"><div class="compat-logo">🟠</div><div class="compat-name">Huawei</div><div class="compat-check">✓</div></div>
+      <div class="compat-item"><div class="compat-logo">⚡</div><div class="compat-name">+ 9 autres</div><div class="compat-check" style="color:var(--mu)">→</div></div>
+    </div>
+  </div>
+</div>
+
+<script>
+let scanning=true,connCount=2;
+function toggleScan(){
+  scanning=!scanning;
+  const btn=document.getElementById('scan-btn'),icon=document.getElementById('bt-icon'),lbl=document.getElementById('scan-lbl'),sub=document.getElementById('scan-sub');
+  if(scanning){btn.textContent='Stop';btn.classList.add('stop');icon.classList.add('scanning');lbl.textContent='Recherche en cours...';sub.textContent='Scan des appareils à proximité';}
+  else{btn.textContent='Scanner';btn.classList.remove('stop');icon.classList.remove('scanning');lbl.textContent='Scan arrêté';sub.textContent='Appuie sur Scanner pour relancer';}
+}
+function connectDevice(id,btn,v1,l1,l2,v2,v3){
+  const dev=document.getElementById(id);
+  btn.textContent='Connexion...';btn.className='d-btn connecting';dev.classList.add('connecting');
+  setTimeout(()=>{
+    btn.textContent='✓ Connecté';btn.className='d-btn connected';
+    dev.classList.remove('connecting','found');dev.classList.add('connected');
+    connCount++;document.getElementById('conn-count').textContent=connCount+' connectés';
+    const data=document.createElement('div');
+    data.className='d-data';data.style.display='grid';data.style.gridTemplateColumns='repeat(3,1fr)';data.style.gap='8px';data.style.marginTop='12px';data.style.paddingTop='12px';data.style.borderTop='1px solid #2a2826';
+    data.innerHTML=`<div class="d-metric"><div class="d-metric-val" style="color:var(--red)">${v1}</div><div class="d-metric-lbl">${l1}</div></div><div class="d-metric"><div class="d-metric-val" style="color:var(--bl)">${v2}</div><div class="d-metric-lbl">${l2}</div></div><div class="d-metric"><div class="d-metric-val" style="color:var(--gr)">${v3}</div><div class="d-metric-lbl">kcal/actif</div></div>`;
+    dev.appendChild(data);
+  },1800);
+}
+function filterCat(cat,el){
+  document.querySelectorAll('.cat').forEach(c=>c.classList.remove('on'));el.classList.add('on');
+  document.querySelectorAll('.device').forEach(d=>{d.style.display=(cat==='all'||d.dataset.cat===cat)?'block':'none';});
+}
+</script>
+</body></html>
