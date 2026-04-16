@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700;900&family=DM+Sans:wght@300;400;500;600&display=swap');
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#111010;--sf:#1C1B1B;--sf2:#252423;--red:#E8220A;--mu:#6B6966;--txt:#F0EDE8;--wa:#C9C4BC;--bl:#00C2FF;--gr:#00E676;--go:#D4AF37}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--txt);min-height:100vh}
+.app{max-width:420px;margin:0 auto;min-height:100vh;display:flex;flex-direction:column}
+
+/* PROGRESS */
+.progress-bar{height:3px;background:#2a2826;position:relative}
+.progress-fill{height:100%;background:var(--red);border-radius:0 2px 2px 0;transition:width .4s ease}
+.step-counter{padding:16px 20px 0;display:flex;align-items:center;justify-content:space-between}
+.step-num{font-size:11px;color:var(--mu);text-transform:uppercase;letter-spacing:1.5px}
+.back-btn{background:none;border:none;color:var(--mu);font-size:20px;cursor:pointer;padding:4px 8px;font-family:'DM Sans',sans-serif}
+.back-btn:hover{color:var(--txt)}
+
+/* SCREEN */
+.screen{display:none;flex:1;flex-direction:column;padding:24px 20px 20px;animation:slideIn .3s ease}
+.screen.on{display:flex}
+@keyframes slideIn{from{opacity:0;transform:translateX(20px)}to{opacity:1;transform:translateX(0)}}
+
+.step-title{font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:34px;letter-spacing:-.5px;line-height:1.1;margin-bottom:6px}
+.step-title span{color:var(--red)}
+.step-sub{font-size:13px;color:var(--mu);line-height:1.5;margin-bottom:24px}
+.multi-hint{font-size:11px;color:var(--red);margin-bottom:16px;text-transform:uppercase;letter-spacing:1px}
+
+/* OPTIONS */
+.opt-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:20px}
+.opt-grid.one{grid-template-columns:1fr}
+.opt-grid.three{grid-template-columns:repeat(3,1fr)}
+
+.opt{background:var(--sf);border:1px solid #2a2826;border-radius:10px;padding:14px 12px;cursor:pointer;transition:all .2s;text-align:center;font-family:'DM Sans',sans-serif}
+.opt:hover{border-color:#444}
+.opt.on{border-color:var(--red);background:rgba(232,34,10,.1)}
+.opt .ico{font-size:28px;display:block;margin-bottom:8px}
+.opt .lbl{font-size:13px;font-weight:600;color:var(--wa)}
+.opt.on .lbl{color:var(--txt)}
+.opt .sub{font-size:11px;color:var(--mu);margin-top:3px;line-height:1.4}
+.opt.on .sub{color:#c9a0a0}
+
+/* MODE CARDS (special) */
+.mode-card{background:var(--sf);border:1px solid #2a2826;border-radius:12px;padding:20px;cursor:pointer;transition:all .2s;margin-bottom:12px;display:flex;gap:16px;align-items:flex-start}
+.mode-card:hover{border-color:#444}
+.mode-card.on{border-color:var(--red);background:rgba(232,34,10,.08)}
+.mode-card .mc-icon{font-size:36px;flex-shrink:0}
+.mode-card .mc-title{font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:900;margin-bottom:4px}
+.mode-card .mc-desc{font-size:12px;color:var(--mu);line-height:1.5}
+.mode-card.on .mc-desc{color:var(--wa)}
+.mode-badge{display:inline-block;font-size:10px;font-weight:700;padding:3px 8px;border-radius:4px;margin-top:8px;text-transform:uppercase;letter-spacing:.5px}
+
+/* SLIDER */
+.slider-block{margin-bottom:20px}
+.slider-lbl-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.slider-lbl{font-size:13px;color:var(--wa)}
+.slider-val{font-family:'Barlow Condensed',sans-serif;font-size:24px;color:var(--red)}
+.range{width:100%;-webkit-appearance:none;height:4px;border-radius:2px;background:var(--sf2);outline:none;cursor:pointer}
+.range::-webkit-slider-thumb{-webkit-appearance:none;width:22px;height:22px;border-radius:50%;background:var(--red);cursor:pointer;border:2px solid var(--bg)}
+.range-labels{display:flex;justify-content:space-between;margin-top:6px}
+.range-lbl{font-size:10px;color:var(--mu)}
+
+/* INPUT */
+.text-input{width:100%;background:var(--sf);border:1px solid #2a2826;border-radius:10px;padding:14px 16px;color:var(--txt);font-family:'DM Sans',sans-serif;font-size:16px;outline:none;margin-bottom:12px}
+.text-input:focus{border-color:var(--red)}
+.text-input::placeholder{color:var(--mu)}
+.input-row{display:flex;gap:10px}
+.input-group{flex:1}
+.input-lbl{font-size:11px;color:var(--mu);margin-bottom:6px;text-align:center}
+
+.num-inp{width:100%;background:var(--sf);border:1px solid #2a2826;border-radius:10px;padding:13px;color:var(--txt);font-family:'DM Sans',sans-serif;font-size:18px;font-weight:700;outline:none;text-align:center}
+.num-inp:focus{border-color:var(--red)}
+
+/* DISPO */
+.dispo-grid{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap}
+.dispo-chip{padding:9px 14px;border-radius:20px;border:1px solid #2a2826;background:var(--sf2);color:var(--mu);font-size:12px;font-weight:600;cursor:pointer;transition:all .2s;font-family:'DM Sans',sans-serif}
+.dispo-chip.on{background:var(--red);color:var(--txt);border-color:var(--red)}
+
+/* PHOTO */
+.photo-zone{border:2px dashed #333;border-radius:12px;padding:32px;text-align:center;cursor:pointer;transition:all .2s;margin-bottom:16px}
+.photo-zone:hover{border-color:var(--red)}
+.photo-icon{font-size:48px;margin-bottom:12px}
+.photo-lbl{font-size:14px;color:var(--mu)}
+
+/* SUMMARY */
+.summary-card{background:var(--sf);border:1px solid #2a2826;border-radius:12px;padding:16px;margin-bottom:12px}
+.sum-row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid #2a2826}
+.sum-row:last-child{border-bottom:none}
+.sum-key{font-size:12px;color:var(--mu)}
+.sum-val{font-size:13px;font-weight:600;color:var(--wa);text-align:right;max-width:220px}
+
+/* BOTTOM */
+.bottom{margin-top:auto;padding-top:16px}
+.next-btn{width:100%;padding:17px;background:var(--red);border:none;border-radius:10px;color:var(--txt);font-size:14px;font-weight:700;letter-spacing:2px;text-transform:uppercase;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .15s}
+.next-btn:hover{opacity:.9}
+.next-btn:active{transform:scale(.98)}
+.skip-btn{width:100%;padding:12px;background:none;border:none;color:var(--mu);font-size:13px;cursor:pointer;font-family:'DM Sans',sans-serif;margin-top:8px}
+.skip-btn:hover{color:var(--wa)}
+
+/* WELCOME */
+.welcome{text-align:center;padding:40px 20px 24px;flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.w-logo{font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:64px;letter-spacing:-2px;margin-bottom:8px}
+.w-logo span{color:var(--red)}
+.w-tag{font-size:14px;color:var(--mu);margin-bottom:40px}
+.w-features{width:100%;margin-bottom:40px}
+.w-feat{display:flex;align-items:center;gap:14px;padding:12px 0;border-bottom:1px solid #2a2826;text-align:left}
+.w-feat:first-child{border-top:1px solid #2a2826}
+.w-feat-icon{font-size:24px;width:36px;text-align:center;flex-shrink:0}
+.w-feat-text{font-size:13px;color:var(--wa);line-height:1.4}
+.w-feat-text strong{color:var(--txt);display:block;margin-bottom:2px}
+
+/* CONGRATS */
+.congrats{text-align:center;padding:40px 20px 24px;flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.big-check{font-size:72px;margin-bottom:16px}
+.congrats-title{font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:42px;margin-bottom:8px}
+.congrats-sub{font-size:14px;color:var(--mu);line-height:1.6;margin-bottom:32px}
+.dna-preview{background:var(--sf);border:1px solid #2a2826;border-radius:12px;padding:16px;width:100%;margin-bottom:24px}
+.dna-title{font-size:11px;color:var(--mu);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:12px}
+.dna-row{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+.dna-lbl{font-size:12px;color:var(--mu);width:80px}
+.dna-track{flex:1;height:4px;background:#2a2826;border-radius:2px;overflow:hidden}
+.dna-fill{height:100%;background:var(--red);border-radius:2px}
+.dna-pct{font-size:12px;color:var(--red);width:32px;text-align:right}
+</style></head><body>
+<div class="app">
+  <div class="progress-bar"><div class="progress-fill" id="prog" style="width:0%"></div></div>
+  <div class="step-counter">
+    <button class="back-btn" id="back-btn" onclick="goBack()" style="visibility:hidden">←</button>
+    <div class="step-num" id="step-num"></div>
+    <div style="width:40px"></div>
+  </div>
+
+  <!-- STEP 0: WELCOME -->
+  <div class="screen on" id="s0">
+    <div class="welcome">
+      <div class="w-logo">SQU<span>AD</span></div>
+      <div class="w-tag">Ton compagnon sport · Social ou Solo</div>
+      <div class="w-features">
+        <div class="w-feat"><div class="w-feat-icon">⚡</div><div class="w-feat-text"><strong>Matching sportif intelligent</strong>Trouve des partenaires selon ton niveau, ta salle et tes objectifs</div></div>
+        <div class="w-feat"><div class="w-feat-icon">🏆</div><div class="w-feat-text"><strong>Défis avec mises</strong>Challenge tes amis et gagne des récompenses réelles</div></div>
+        <div class="w-feat"><div class="w-feat-icon">🥗</div><div class="w-feat-text"><strong>Suivi nutrition & corps</strong>Calories, macros, scan IA, connecté à tes appareils</div></div>
+        <div class="w-feat"><div class="w-feat-icon">🔧</div><div class="w-feat-text"><strong>Guide des machines</strong>Chaque machine expliquée pour ton niveau</div></div>
+      </div>
+      <div class="bottom" style="width:100%">
+        <button class="next-btn" onclick="goTo(1)">Commencer →</button>
+        <p style="font-size:11px;color:var(--mu);text-align:center;margin-top:12px">Gratuit · 3 minutes · Sans engagement</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- STEP 1: MODE -->
+  <div class="screen" id="s1">
+    <div class="step-title">Comment veux-tu<br><span>utiliser Squad ?</span></div>
+    <div class="step-sub">Tu pourras changer à tout moment dans les réglages.</div>
+    <div class="mode-card on" id="mode-social" onclick="setMode('social')">
+      <div class="mc-icon">⚡</div>
+      <div>
+        <div class="mc-title">Mode Social</div>
+        <div class="mc-desc">Trouve des partenaires de sport, crée des défis, rejoins des squads. Matching selon tes objectifs et ta localisation.</div>
+        <div class="mode-badge" style="background:rgba(232,34,10,.15);color:var(--red)">Matching · Défis · Communauté</div>
+      </div>
+    </div>
+    <div class="mode-card" id="mode-solo" onclick="setMode('solo')">
+      <div class="mc-icon">🎯</div>
+      <div>
+        <div class="mc-title">Mode Solo</div>
+        <div class="mc-desc">Suivi personnel, nutrition, guide machines, défis avec toi-même. Aucun contact avec d'autres utilisateurs.</div>
+        <div class="mode-badge" style="background:rgba(0,194,255,.1);color:var(--bl)">Nutrition · Machines · Progression</div>
+      </div>
+    </div>
+    <div class="bottom"><button class="next-btn" onclick="goTo(2)">Continuer →</button></div>
+  </div>
+
+  <!-- STEP 2: IDENTITÉ -->
+  <div class="screen" id="s2">
+    <div class="step-title">Parle-nous<br><span>de toi</span></div>
+    <div class="step-sub">Ces informations restent privées et servent uniquement à personnaliser ton expérience.</div>
+    <input class="text-input" placeholder="Ton prénom" id="inp-prenom">
+    <div class="input-row" style="margin-bottom:12px">
+      <div class="input-group">
+        <div class="input-lbl">Âge</div>
+        <input class="num-inp" type="number" id="inp-age" value="27" min="15" max="80">
+      </div>
+      <div class="input-group">
+        <div class="input-lbl">Poids (kg)</div>
+        <input class="num-inp" type="number" id="inp-poids" value="70" min="30" max="200">
+      </div>
+      <div class="input-group">
+        <div class="input-lbl">Taille (cm)</div>
+        <input class="num-inp" type="number" id="inp-taille" value="170" min="100" max="220">
+      </div>
+    </div>
+    <div class="multi-hint">Tu es</div>
+    <div class="opt-grid three">
+      <div class="opt on" onclick="setSingle('sexe',this,'Homme')"><span class="ico">♂️</span><div class="lbl">Homme</div></div>
+      <div class="opt" onclick="setSingle('sexe',this,'Femme')"><span class="ico">♀️</span><div class="lbl">Femme</div></div>
+      <div class="opt" onclick="setSingle('sexe',this,'Autre')"><span class="ico">⚧️</span><div class="lbl">Autre</div></div>
+    </div>
+    <div class="bottom"><button class="next-btn" onclick="goTo(3)">Continuer →</button></div>
+  </div>
+
+  <!-- STEP 3: LOCALISATION -->
+  <div class="screen" id="s3">
+    <div class="step-title">Où tu<br><span>t'entraînes ?</span></div>
+    <div class="step-sub">Pour te matcher avec des gens près de chez toi et dans ta salle.</div>
+    <div class="opt-grid one" style="margin-bottom:12px">
+      <div class="opt on" onclick="setSingle('loc',this,'Géolocalisation auto')" style="display:flex;align-items:center;gap:12px;text-align:left;padding:16px">
+        <span style="font-size:28px">📍</span>
+        <div><div class="lbl" style="text-align:left">Utiliser ma position</div><div class="sub" style="text-align:left">Recommandé · Précis et automatique</div></div>
+      </div>
+    </div>
+    <input class="text-input" placeholder="Ou entre ta ville / code postal" id="inp-ville">
+    <div class="multi-hint" style="margin-top:8px">Ta salle principale</div>
+    <div class="opt-grid">
+      <div class="opt" onclick="toggleMulti('salle',this,'Basic-Fit')"><span class="ico">🏋️</span><div class="lbl">Basic-Fit</div></div>
+      <div class="opt" onclick="toggleMulti('salle',this,'Fitness Park')"><span class="ico">💪</span><div class="lbl">Fitness Park</div></div>
+      <div class="opt" onclick="toggleMulti('salle',this,'On Air')"><span class="ico">🔴</span><div class="lbl">On Air</div></div>
+      <div class="opt" onclick="toggleMulti('salle',this,'Neoness')"><span class="ico">⚡</span><div class="lbl">Neoness</div></div>
+      <div class="opt" onclick="toggleMulti('salle',this,'Keep Cool')"><span class="ico">❄️</span><div class="lbl">Keep Cool</div></div>
+      <div class="opt" onclick="toggleMulti('salle',this,'Salle indépendante')"><span class="ico">🏠</span><div class="lbl">Indépendante</div></div>
+      <div class="opt" onclick="toggleMulti('salle',this,'Extérieur')"><span class="ico">🌳</span><div class="lbl">Extérieur</div></div>
+    </div>
+    <div class="bottom"><button class="next-btn" onclick="goTo(4)">Continuer →</button></div>
+  </div>
+
+  <!-- STEP 4: SPORTS -->
+  <div class="screen" id="s4">
+    <div class="step-title">Tes <span>sports</span></div>
+    <div class="multi-hint">Choisis tout ce que tu pratiques</div>
+    <div class="opt-grid">
+      <div class="opt" onclick="toggleMulti('sport',this,'Fitness')"><span class="ico">🏃‍♀️</span><div class="lbl">Fitness</div></div>
+      <div class="opt" onclick="toggleMulti('sport',this,'Musculation')"><span class="ico">💪</span><div class="lbl">Muscu</div></div>
+      <div class="opt" onclick="toggleMulti('sport',this,'Running')"><span class="ico">👟</span><div class="lbl">Running</div></div>
+      <div class="opt" onclick="toggleMulti('sport',this,'Padel')"><span class="ico">🏓</span><div class="lbl">Padel</div></div>
+      <div class="opt" onclick="toggleMulti('sport',this,'Tennis')"><span class="ico">🎾</span><div class="lbl">Tennis</div></div>
+      <div class="opt" onclick="toggleMulti('sport',this,'Basket')"><span class="ico">🏀</span><div class="lbl">Basket</div></div>
+      <div class="opt" onclick="toggleMulti('sport',this,'Football')"><span class="ico">⚽</span><div class="lbl">Football</div></div>
+      <div class="opt" onclick="toggleMulti('sport',this,'Natation')"><span class="ico">🏊</span><div class="lbl">Natation</div></div>
+      <div class="opt" onclick="toggleMulti('sport',this,'Vélo')"><span class="ico">🚴</span><div class="lbl">Vélo</div></div>
+      <div class="opt" onclick="toggleMulti('sport',this,'Boxe')"><span class="ico">🥊</span><div class="lbl">Boxe</div></div>
+      <div class="opt" onclick="toggleMulti('sport',this,'Yoga')"><span class="ico">🧘</span><div class="lbl">Yoga</div></div>
+      <div class="opt" onclick="toggleMulti('sport',this,'CrossFit')"><span class="ico">🔱</span><div class="lbl">CrossFit</div></div>
+    </div>
+    <div class="bottom"><button class="next-btn" onclick="goTo(5)">Continuer →</button></div>
+  </div>
+
+  <!-- STEP 5: OBJECTIFS -->
+  <div class="screen" id="s5">
+    <div class="step-title">Tes <span>objectifs</span></div>
+    <div class="multi-hint">Tu peux en choisir plusieurs</div>
+    <div class="opt-grid">
+      <div class="opt" onclick="toggleMulti('obj',this,'Perte de poids')"><span class="ico">🔥</span><div class="lbl">Perdre du poids</div></div>
+      <div class="opt" onclick="toggleMulti('obj',this,'Prise de masse')"><span class="ico">💪</span><div class="lbl">Prendre du muscle</div></div>
+      <div class="opt" onclick="toggleMulti('obj',this,'Sèche')"><span class="ico">⚡</span><div class="lbl">Sécher</div></div>
+      <div class="opt" onclick="toggleMulti('obj',this,'Endurance')"><span class="ico">🏃</span><div class="lbl">Endurance</div></div>
+      <div class="opt" onclick="toggleMulti('obj',this,'Bien-être')"><span class="ico">🧘</span><div class="lbl">Bien-être</div></div>
+      <div class="opt" onclick="toggleMulti('obj',this,'Performance')"><span class="ico">🏆</span><div class="lbl">Performance</div></div>
+      <div class="opt" onclick="toggleMulti('obj',this,'Se faire des amis')"><span class="ico">🤝</span><div class="lbl">Se faire des amis</div></div>
+      <div class="opt" onclick="toggleMulti('obj',this,'Trouver un partenaire')"><span class="ico">💑</span><div class="lbl">Partenaire sport</div></div>
+    </div>
+    <div class="bottom"><button class="next-btn" onclick="goTo(6)">Continuer →</button></div>
+  </div>
+
+  <!-- STEP 6: NIVEAU & HABITUDES -->
+  <div class="screen" id="s6">
+    <div class="step-title">Ton <span>niveau</span></div>
+    <div class="step-sub">Sois honnête — ça aide à trouver les meilleurs matchs pour toi.</div>
+    <div class="opt-grid one" style="margin-bottom:20px">
+      <div class="opt" onclick="setSingle('niveau',this,'Débutant')"><div style="display:flex;align-items:center;gap:14px;text-align:left"><span style="font-size:28px">🌱</span><div><div class="lbl" style="text-align:left">Débutant</div><div class="sub" style="text-align:left">Moins de 6 mois de pratique régulière</div></div></div></div>
+      <div class="opt" onclick="setSingle('niveau',this,'Intermédiaire')"><div style="display:flex;align-items:center;gap:14px;text-align:left"><span style="font-size:28px">⚡</span><div><div class="lbl" style="text-align:left">Intermédiaire</div><div class="sub" style="text-align:left">6 mois à 2 ans · Je maîtrise les bases</div></div></div></div>
+      <div class="opt" onclick="setSingle('niveau',this,'Confirmé')"><div style="display:flex;align-items:center;gap:14px;text-align:left"><span style="font-size:28px">🔥</span><div><div class="lbl" style="text-align:left">Confirmé</div><div class="sub" style="text-align:left">2 ans+ · Programme structuré</div></div></div></div>
+      <div class="opt" onclick="setSingle('niveau',this,'Expert')"><div style="display:flex;align-items:center;gap:14px;text-align:left"><span style="font-size:28px">🏆</span><div><div class="lbl" style="text-align:left">Expert / Compétiteur</div><div class="sub" style="text-align:left">Niveau avancé ou compétition</div></div></div></div>
+    </div>
+    <div class="bottom"><button class="next-btn" onclick="goTo(7)">Continuer →</button></div>
+  </div>
+
+  <!-- STEP 7: DISPONIBILITÉS -->
+  <div class="screen" id="s7">
+    <div class="step-title">Tes <span>dispos</span></div>
+    <div class="step-sub">Quand tu t'entraînes habituellement ?</div>
+    <div class="multi-hint">Jours</div>
+    <div class="dispo-grid">
+      <div class="dispo-chip" onclick="this.classList.toggle('on')">Lun</div>
+      <div class="dispo-chip" onclick="this.classList.toggle('on')">Mar</div>
+      <div class="dispo-chip" onclick="this.classList.toggle('on')">Mer</div>
+      <div class="dispo-chip" onclick="this.classList.toggle('on')">Jeu</div>
+      <div class="dispo-chip" onclick="this.classList.toggle('on')">Ven</div>
+      <div class="dispo-chip" onclick="this.classList.toggle('on')">Sam</div>
+      <div class="dispo-chip" onclick="this.classList.toggle('on')">Dim</div>
+    </div>
+    <div class="multi-hint">Créneaux</div>
+    <div class="dispo-grid">
+      <div class="dispo-chip" onclick="this.classList.toggle('on')">🌑 Nuit / early (4h-6h)</div>
+      <div class="dispo-chip" onclick="this.classList.toggle('on')">🌅 Tôt matin (6h-8h)</div>
+      <div class="dispo-chip" onclick="this.classList.toggle('on')">☀️ Matin (8h-12h)</div>
+      <div class="dispo-chip" onclick="this.classList.toggle('on')">🌤 Midi (12h-14h)</div>
+      <div class="dispo-chip" onclick="this.classList.toggle('on')">🌇 Après-midi (14h-17h)</div>
+      <div class="dispo-chip" onclick="this.classList.toggle('on')">🌆 Soir (17h-20h)</div>
+      <div class="dispo-chip" onclick="this.classList.toggle('on')">🌙 Nuit (20h+)</div>
+    </div>
+    <div class="multi-hint" style="margin-top:4px">Fréquence</div>
+    <div class="slider-block">
+      <div class="slider-lbl-row">
+        <div class="slider-lbl">Séances par semaine</div>
+        <div class="slider-val" id="freq-val">3x</div>
+      </div>
+      <input type="range" class="range" min="1" max="7" value="3" step="1" oninput="document.getElementById('freq-val').textContent=this.value+'x'">
+      <div class="range-labels"><span class="range-lbl">1x</span><span class="range-lbl">7x</span></div>
+    </div>
+    <div class="bottom"><button class="next-btn" onclick="goTo(8)">Continuer →</button></div>
+  </div>
+
+  <!-- STEP 8: PERSONNALITÉ SPORTIVE -->
+  <div class="screen" id="s8">
+    <div class="step-title">Ton <span>profil</span><br>sportif</div>
+    <div class="multi-hint">Choisis ce qui te correspond</div>
+    <div class="opt-grid">
+      <div class="opt" onclick="toggleMulti('perso',this,'Motivant')"><span class="ico">🔥</span><div class="lbl">Motivant</div><div class="sub">J'encourage les autres</div></div>
+      <div class="opt" onclick="toggleMulti('perso',this,'Compétiteur')"><span class="ico">🏆</span><div class="lbl">Compétiteur</div><div class="sub">J'aime me dépasser</div></div>
+      <div class="opt" onclick="toggleMulti('perso',this,'Social')"><span class="ico">😄</span><div class="lbl">Social</div><div class="sub">J'aime discuter en salle</div></div>
+      <div class="opt" onclick="toggleMulti('perso',this,'Focus')"><span class="ico">🎯</span><div class="lbl">Focus</div><div class="sub">Je suis concentré, discret</div></div>
+      <div class="opt" onclick="toggleMulti('perso',this,'Régulier')"><span class="ico">📅</span><div class="lbl">Régulier</div><div class="sub">Je respecte mes plans</div></div>
+      <div class="opt" onclick="toggleMulti('perso',this,'Spontané')"><span class="ico">⚡</span><div class="lbl">Spontané</div><div class="sub">Je m'entraîne sur un coup de tête</div></div>
+      <div class="opt" onclick="toggleMulti('perso',this,'Sérieux')"><span class="ico">💼</span><div class="lbl">Sérieux</div><div class="sub">Programme strict</div></div>
+      <div class="opt" onclick="toggleMulti('perso',this,'Bonne ambiance')"><span class="ico">🎵</span><div class="lbl">Bonne ambiance</div><div class="sub">Sport = plaisir avant tout</div></div>
+    </div>
+    <div class="bottom"><button class="next-btn" onclick="goTo(9)">Continuer →</button></div>
+  </div>
+
+  <!-- STEP 9: HABITUDES DE VIE -->
+  <div class="screen" id="s9">
+    <div class="step-title">Tes habitudes<br><span>de vie</span></div>
+    <div class="step-sub">Pour des recommandations nutrition et récupération vraiment personnalisées.</div>
+
+    <div class="multi-hint">Alimentation</div>
+    <div class="opt-grid">
+      <div class="opt" onclick="setSingle('diet',this,'Omnivore')"><span class="ico">🍗</span><div class="lbl">Omnivore</div></div>
+      <div class="opt" onclick="setSingle('diet',this,'Végétarien')"><span class="ico">🥗</span><div class="lbl">Végétarien</div></div>
+      <div class="opt" onclick="setSingle('diet',this,'Vegan')"><span class="ico">🌱</span><div class="lbl">Vegan</div></div>
+      <div class="opt" onclick="setSingle('diet',this,'Flexi')"><span class="ico">⚖️</span><div class="lbl">Flexitarien</div></div>
+    </div>
+
+    <div class="multi-hint">Compléments</div>
+    <div class="dispo-grid">
+      <div class="dispo-chip" onclick="this.classList.toggle('on')">💊 Whey</div>
+      <div class="dispo-chip" onclick="this.classList.toggle('on')">🔵 Créatine</div>
+      <div class="dispo-chip" onclick="this.classList.toggle('on')">🟡 BCAA</div>
+      <div class="dispo-chip" onclick="this.classList.toggle('on')">🍃 Vitamines</div>
+      <div class="dispo-chip" onclick="this.classList.toggle('on')">❌ Aucun</div>
+    </div>
+
+    <div class="multi-hint" style="margin-top:16px">Sommeil moyen</div>
+    <div class="slider-block">
+      <div class="slider-lbl-row">
+        <div class="slider-lbl">Heures par nuit</div>
+        <div class="slider-val" id="sleep-val">7h</div>
+      </div>
+      <input type="range" class="range" min="4" max="10" value="7" step="0.5" oninput="document.getElementById('sleep-val').textContent=this.value+'h'">
+      <div class="range-labels"><span class="range-lbl">4h</span><span class="range-lbl">10h</span></div>
+    </div>
+    <div class="bottom"><button class="next-btn" onclick="goTo(10)">Continuer →</button></div>
+  </div>
+
+  <!-- STEP 10: PHOTO + BIO (mode social) -->
+  <div class="screen" id="s10">
+    <div class="step-title">Ton <span>profil</span><br>public</div>
+    <div class="step-sub">Les autres utilisateurs verront ça. Tu peux sauter cette étape.</div>
+    <div class="photo-zone" onclick="this.innerHTML='<div class=\'photo-icon\'>✅</div><div class=\'photo-lbl\' style=\'color:var(--gr)\'>Photo ajoutée !</div>'">
+      <div class="photo-icon">📷</div>
+      <div class="photo-lbl">Ajoute une photo de profil</div>
+    </div>
+    <textarea class="text-input" placeholder="Bio courte · Ex: Passionné de muscu et running, cherche partenaire motivé pour des séances le soir à Paris 🔥" rows="3" style="resize:none;line-height:1.5"></textarea>
+    <div class="multi-hint">Tu recherches</div>
+    <div class="opt-grid">
+      <div class="opt" onclick="toggleMulti('rech',this,'Partenaire sport')"><span class="ico">🤝</span><div class="lbl">Partenaire sport</div></div>
+      <div class="opt" onclick="toggleMulti('rech',this,'Amis en salle')"><span class="ico">😄</span><div class="lbl">Amis en salle</div></div>
+      <div class="opt" onclick="toggleMulti('rech',this,'Groupe / Squad')"><span class="ico">👥</span><div class="lbl">Groupe / Squad</div></div>
+      <div class="opt" onclick="toggleMulti('rech',this,'Coach informel')"><span class="ico">🎯</span><div class="lbl">Coach informel</div></div>
+    </div>
+    <div class="bottom">
+      <button class="next-btn" onclick="goTo(11)">Terminer →</button>
+      <button class="skip-btn" onclick="goTo(11)">Passer cette étape</button>
+    </div>
+  </div>
+
+  <!-- STEP 11: RÉCAP -->
+  <div class="screen" id="s11">
+    <div class="step-title">Ton <span>récap</span></div>
+    <div class="step-sub">Vérifie tes infos avant de lancer Squad.</div>
+    <div class="summary-card" id="summary"></div>
+    <div class="dna-preview">
+      <div class="dna-title">Ton Sport DNA · Profil calculé</div>
+      <div class="dna-row"><div class="dna-lbl">Motivation</div><div class="dna-track"><div class="dna-fill" id="dna-mot" style="width:0%"></div></div><div class="dna-pct" id="dna-mot-v">—</div></div>
+      <div class="dna-row"><div class="dna-lbl">Régularité</div><div class="dna-track"><div class="dna-fill" id="dna-reg" style="width:0%"></div></div><div class="dna-pct" id="dna-reg-v">—</div></div>
+      <div class="dna-row"><div class="dna-lbl">Niveau</div><div class="dna-track"><div class="dna-fill" id="dna-niv" style="width:0%"></div></div><div class="dna-pct" id="dna-niv-v">—</div></div>
+      <div class="dna-row"><div class="dna-lbl">Social</div><div class="dna-track"><div class="dna-fill" id="dna-soc" style="width:0%"></div></div><div class="dna-pct" id="dna-soc-v">—</div></div>
+    </div>
+    <div class="bottom"><button class="next-btn" onclick="goTo(12)">Lancer Squad ⚡</button></div>
+  </div>
+
+  <!-- STEP 12: CONGRATS -->
+  <div class="screen" id="s12">
+    <div class="congrats">
+      <div class="big-check">🎉</div>
+      <div class="congrats-title">Bienvenue <span id="cg-prenom" style="color:var(--red)">dans Squad</span> !</div>
+      <div class="congrats-sub">Ton profil est prêt. <span id="cg-mode"></span></div>
+      <div class="dna-preview" style="margin-bottom:24px">
+        <div class="dna-title">Sport DNA · Complété ✓</div>
+        <div class="dna-row"><div class="dna-lbl">Motivation</div><div class="dna-track"><div class="dna-fill" id="dna2-mot" style="width:80%;transition:width 1s ease"></div></div><div class="dna-pct" id="dna2-mot-v">80%</div></div>
+        <div class="dna-row"><div class="dna-lbl">Régularité</div><div class="dna-track"><div class="dna-fill" id="dna2-reg" style="width:70%;transition:width 1.2s ease"></div></div><div class="dna-pct" id="dna2-reg-v">70%</div></div>
+        <div class="dna-row"><div class="dna-lbl">Niveau</div><div class="dna-track"><div class="dna-fill" id="dna2-niv" style="width:65%;transition:width 1.4s ease"></div></div><div class="dna-pct" id="dna2-niv-v">65%</div></div>
+        <div class="dna-row"><div class="dna-lbl">Social</div><div class="dna-track"><div class="dna-fill" id="dna2-soc" style="width:90%;transition:width 1.6s ease"></div></div><div class="dna-pct" id="dna2-soc-v">90%</div></div>
+      </div>
+      <button class="next-btn" style="width:100%" onclick="finishOnboarding()">Découvrir mon Squad →</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const TOTAL=11;
+let cur=0;
+const data={mode:'social',sexe:'',niveau:'',diet:'',sports:[],objectifs:[],salles:[],perso:[],recherche:[]};
+
+const steps=[
+  {id:'s0',prog:0,label:''},
+  {id:'s1',prog:9,label:'Étape 1 · Mode'},
+  {id:'s2',prog:18,label:'Étape 2 · Profil'},
+  {id:'s3',prog:27,label:'Étape 3 · Localisation'},
+  {id:'s4',prog:36,label:'Étape 4 · Sports'},
+  {id:'s5',prog:45,label:'Étape 5 · Objectifs'},
+  {id:'s6',prog:54,label:'Étape 6 · Niveau'},
+  {id:'s7',prog:63,label:'Étape 7 · Disponibilités'},
+  {id:'s8',prog:72,label:'Étape 8 · Personnalité'},
+  {id:'s9',prog:81,label:'Étape 9 · Habitudes'},
+  {id:'s10',prog:90,label:'Étape 10 · Profil public'},
+  {id:'s11',prog:100,label:'Récapitulatif'},
+  {id:'s12',prog:100,label:''}
+];
+
+function goTo(n){
+  if(n===10&&data.mode==='solo'){n=11;}
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('on'));
+  document.getElementById(steps[n].id).classList.add('on');
+  document.getElementById('prog').style.width=steps[n].prog+'%';
+  document.getElementById('step-num').textContent=steps[n].label;
+  document.getElementById('back-btn').style.visibility=n>0&&n<12?'visible':'hidden';
+  cur=n;
+  if(n===11)buildSummary();
+  if(n===12)buildCongrats();
+}
+
+function goBack(){if(cur>1)goTo(cur-1);}
+
+function setMode(m){
+  data.mode=m;
+  document.getElementById('mode-social').classList.toggle('on',m==='social');
+  document.getElementById('mode-solo').classList.toggle('on',m==='solo');
+}
+
+function setSingle(key,el,val){
+  data[key]=val;
+  const parent=el.closest('.opt-grid')||el.closest('.mode-card');
+  el.closest('.opt-grid').querySelectorAll('.opt').forEach(o=>o.classList.remove('on'));
+  el.classList.add('on');
+}
+
+function toggleMulti(key,el,val){
+  el.classList.toggle('on');
+  if(!Array.isArray(data[key]))data[key]=[];
+  if(el.classList.contains('on')){if(!data[key].includes(val))data[key].push(val);}
+  else{data[key]=data[key].filter(v=>v!==val);}
+}
+
+function buildSummary(){
+  const prenom=document.getElementById('inp-prenom').value||'Toi';
+  const age=document.getElementById('inp-age').value;
+  const poids=document.getElementById('inp-poids').value;
+  const taille=document.getElementById('inp-taille').value;
+  const ville=document.getElementById('inp-ville').value||'Géoloc activée';
+  const rows=[
+    {k:'Mode',v:data.mode==='social'?'⚡ Social — Matching activé':'🎯 Solo — Pas de matching'},
+    {k:'Identité',v:`${prenom} · ${age} ans · ${data.sexe||'Non précisé'}`},
+    {k:'Mensurations',v:`${poids}kg · ${taille}cm`},
+    {k:'Localisation',v:ville},
+    {k:'Salles',v:data.salles.length?data.salles.join(', '):'Non précisé'},
+    {k:'Sports',v:data.sports.length?data.sports.join(', '):'Non précisé'},
+    {k:'Objectifs',v:data.objectifs.length?data.objectifs.join(', '):'Non précisé'},
+    {k:'Niveau',v:data.niveau||'Non précisé'},
+    {k:'Personnalité',v:data.perso.length?data.perso.join(', '):'Non précisé'},
+    {k:'Régime',v:data.diet||'Non précisé'},
+  ];
+  if(data.mode==='social')rows.push({k:'Je recherche',v:data.recherche.length?data.recherche.join(', '):'Non précisé'});
+  document.getElementById('summary').innerHTML=rows.map(r=>`<div class="sum-row"><div class="sum-key">${r.k}</div><div class="sum-val">${r.v}</div></div>`).join('');
+  const nivMap={Débutant:30,Intermédiaire:55,Confirmé:75,Expert:95};
+  const niv=nivMap[data.niveau]||50;
+  const soc=data.mode==='social'?(data.perso.includes('Social')||data.perso.includes('Motivant')?90:60):20;
+  const mot=data.objectifs.length*12+data.perso.length*8;
+  const reg=document.getElementById('freq-val')?parseInt(document.getElementById('freq-val').textContent)*14:70;
+  setDNA('dna-mot',Math.min(95,mot));
+  setDNA('dna-reg',Math.min(95,reg));
+  setDNA('dna-niv',niv);
+  setDNA('dna-soc',Math.min(95,soc));
+}
+
+function setDNA(id,pct){
+  document.getElementById(id).style.width=pct+'%';
+  document.getElementById(id+'-v').textContent=pct+'%';
+}
+
+function buildCongrats(){
+  const prenom=document.getElementById('inp-prenom').value;
+  document.getElementById('cg-prenom').textContent=prenom?prenom:'dans Squad';
+  document.getElementById('cg-mode').textContent=data.mode==='social'?'On cherche tes premiers matchs près de toi 📍':'Ton tableau de bord solo est prêt 🎯';
+}
+
+
+function finishOnboarding(){
+  try { localStorage.setItem("squad_profile_done","1"); } catch(e){}
+  window.location.replace("./app.html");
+}
+</script>
+</body></html>
