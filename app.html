@@ -593,7 +593,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--txt)}
       <div class="defi-card">
         <div class="defi-hd">
           <div><div class="defi-title">⚖️ Perte de poids · -5kg en 60j</div><div style="font-size:11px;color:var(--mu);margin-top:3px">Il reste 34 jours</div></div>
-          <div class="defi-mise">🏆 1 dîner</div>
+          <div class="defi-mise">💆 1 massage</div>
         </div>
         <div class="vs-row">
           <div class="vs-player">
@@ -618,7 +618,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--txt)}
       <div class="card" style="display:flex;align-items:center;gap:12px">
         <div style="font-size:28px">🥇</div>
         <div><div style="font-size:13px;font-weight:700">-3kg en 45 jours</div><div style="font-size:11px;color:var(--mu)">Gagné contre Léa · Il y a 2 semaines</div></div>
-        <div style="margin-left:auto;font-family:'Barlow Condensed',sans-serif;font-size:18px;color:var(--go)">+1 dîner</div>
+        <div style="margin-left:auto;font-family:'Barlow Condensed',sans-serif;font-size:18px;color:var(--go)">+1 cadeau</div>
       </div>
       <div class="card" style="display:flex;align-items:center;gap:12px">
         <div style="font-size:28px">🥇</div>
@@ -1537,11 +1537,27 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--txt)}
     <select class="modal-inp"><option>⚖️ Perte de poids (kg)</option><option>🏃 Distance (km)</option><option>💪 Nombre de séances</option><option>📏 Tour de taille</option><option>🎯 Objectif perso</option></select>
     <input class="modal-inp" placeholder="Objectif (ex: -5 kg)">
     <input class="modal-inp" placeholder="Durée (ex: 60 jours)">
-    <input class="modal-inp" placeholder="Mise en jeu (ex: 1 gage ou un gage)">
+    <select class="modal-inp" id="gage-select" onchange="toggleCustomGage()">
+      <option value="">🎁 Choisir le gage...</option>
+      <option value="🍽️ 1 dîner">🍽️ 1 dîner</option>
+      <option value="🍕 Pizza">🍕 Pizza</option>
+      <option value="☕ 1 café">☕ 1 café</option>
+      <option value="🍷 1 verre/apéro">🍷 1 verre/apéro</option>
+      <option value="💆 1 massage">💆 1 massage</option>
+      <option value="💅 1 manucure">💅 1 manucure</option>
+      <option value="🎁 1 cadeau">🎁 1 cadeau</option>
+      <option value="💐 1 bouquet">💐 1 bouquet</option>
+      <option value="🎬 1 ciné">🎬 1 ciné</option>
+      <option value="🎤 1 karaoké">🎤 1 karaoké</option>
+      <option value="🏋️ 1 séance offerte">🏋️ 1 séance offerte</option>
+      <option value="🧹 1 corvée">🧹 1 corvée</option>
+      <option value="custom">✍️ Autre (personnalisé)</option>
+    </select>
+    <input class="modal-inp" id="gage-custom" placeholder="Ton gage personnalisé..." style="display:none">
     <input class="modal-inp" placeholder="Inviter un ami (pseudo ou email)">
     <div class="modal-btns">
       <button class="btn-cancel" onclick="document.getElementById('modal-defi').classList.remove('show')">Annuler</button>
-      <button class="btn-ok" onclick="document.getElementById('modal-defi').classList.remove('show')">Lancer ⚡</button>
+      <button class="btn-ok" onclick="lancerDefi()">Lancer ⚡</button>
     </div>
   </div>
 </div>
@@ -1722,5 +1738,26 @@ function showSportCustom(){
 // Init
 goTo('discover');
 document.querySelector('.nav').style.display='flex';
+
+
+function toggleCustomGage(){
+  const sel = document.getElementById("gage-select");
+  const inp = document.getElementById("gage-custom");
+  inp.style.display = sel.value === "custom" ? "block" : "none";
+  if (sel.value === "custom") inp.focus();
+}
+function lancerDefi(){
+  const sel = document.getElementById("gage-select");
+  const custom = document.getElementById("gage-custom");
+  const gage = sel.value === "custom" ? (custom.value.trim() || "1 gage surprise") : (sel.value || "1 gage au choix");
+  const modal = document.getElementById("modal-defi");
+  const ov = document.createElement("div");
+  ov.style.cssText = "position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:var(--sf);border:1px solid var(--red);border-radius:16px;padding:24px;z-index:999;max-width:320px;text-align:center;box-shadow:0 8px 32px rgba(0,0,0,.6)";
+  ov.innerHTML = '<div style="font-size:48px;margin-bottom:8px">🏆</div><div style="font-weight:700;font-size:18px;color:var(--txt);margin-bottom:8px">Défi lancé !</div><div style="color:var(--mu);font-size:13px;margin-bottom:4px">Gage en jeu :</div><div style="font-weight:600;font-size:20px;color:var(--red);margin-bottom:16px">' + gage + '</div><div style="color:var(--mu);font-size:11px;margin-bottom:16px">Ton pote recevra l\'invitation.</div><button onclick="this.parentElement.remove()" style="background:var(--red);color:white;border:none;padding:12px 24px;border-radius:8px;font-weight:700;cursor:pointer;width:100%">OK</button>';
+  document.body.appendChild(ov);
+  modal.classList.remove("show");
+  if (sel) sel.value = "";
+  if (custom) { custom.value = ""; custom.style.display = "none"; }
+}
 </script>
 </body></html>
