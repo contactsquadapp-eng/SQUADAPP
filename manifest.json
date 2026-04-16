@@ -1,0 +1,47 @@
+{
+  "name": "Squad — Trouve ton partenaire sport idéal",
+  "short_name": "Squad",
+  "description": "L'app qui te trouve un partenaire de sport compatible selon ta salle, ton niveau et tes objectifs. Défis, nutrition IA, suivi corporel.",
+  "start_url": "./app.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0a0a0a",
+  "theme_color": "#E8220A",
+  "lang": "fr-FR",
+  "categories": ["health", "fitness", "sports", "social", "lifestyle"],
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Découvrir",
+      "short_name": "Discover",
+      "description": "Trouver un nouveau partenaire de sport",
+      "url": "./app.html#discover"
+    },
+    {
+      "name": "Mes défis",
+      "short_name": "Défis",
+      "description": "Voir mes défis en cours",
+      "url": "./app.html#defis"
+    },
+    {
+      "name": "Mes chats",
+      "short_name": "Chat",
+      "description": "Conversations avec mes matchs",
+      "url": "./app.html#chat"
+    }
+  ]
+}
